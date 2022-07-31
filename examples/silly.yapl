@@ -7,4 +7,8 @@ class Sally inherits Silly { };
 class Main {
     x : Sally <- (new Sally).copy();
     main() : Sally { x };
+    otromain(var1: Int, var2: Int): Sally {
+     let aaa: Int, bbb: Char in (3 + 3)
+
+    };
 };
