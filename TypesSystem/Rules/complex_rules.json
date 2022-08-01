@@ -1,0 +1,182 @@
+[
+  {
+    "given": [
+      {
+        "variable": "a",
+        "type": "String"
+      },
+      {
+          "variable": "b",
+          "type": "Bool"
+      }
+    ],
+    "results": [
+      {
+        "val": "a + b",
+        "result": "Error"
+      },
+      {
+        "val": "a - b",
+        "result": "Error"
+      },
+      {
+        "val": "a * b",
+        "result": "Error"
+      },
+      {
+        "val": "a / b",
+        "result": "Error"
+      }
+    ]
+  },
+  {
+    "given": [
+      {
+        "variable": "a",
+        "type": "Int"
+      },
+      {
+          "variable": "b",
+          "type": "Bool"
+      }
+    ],
+    "results": [
+      {
+        "val": "a + b",
+        "result": "Error"
+      },
+      {
+        "val": "a - b",
+        "result": "Error"
+      },
+      {
+        "val": "a * b",
+        "result": "Error"
+      },
+      {
+        "val": "a / b",
+        "result": "Error"
+      }
+    ]
+  },
+  {
+    "given": [
+      {
+        "variable": "a",
+        "type": "Int"
+      },
+      {
+          "variable": "b",
+          "type": "Int"
+      }
+    ],
+    "results": [
+      {
+        "val": "a + b",
+        "result": "Int"
+      },
+      {
+        "val": "a - b",
+        "result": "Int"
+      },
+      {
+        "val": "a * b",
+        "result": "Int"
+      },
+      {
+        "val": "a / b",
+        "result": "Int"
+      }
+    ]
+  },
+  {
+    "given": [
+      {
+        "variable": "a",
+        "type": "String"
+      },
+      {
+          "variable": "b",
+          "type": "Int"
+      }
+    ],
+    "results": [
+      {
+        "val": "a + b",
+        "result": "Error"
+      },
+      {
+        "val": "a - b",
+        "result": "Error"
+      },
+      {
+        "val": "a * b",
+        "result": "Error"
+      },
+      {
+        "val": "a / b",
+        "result": "Error"
+      }
+    ]
+  },
+  {
+    "given": [
+      {
+        "variable": "a",
+        "type": "String"
+      },
+      {
+          "variable": "b",
+          "type": "String"
+      }
+    ],
+    "results": [
+      {
+        "val": "a + b",
+        "result": "String"
+      },
+      {
+        "val": "a - b",
+        "result": "Error"
+      },
+      {
+        "val": "a * b",
+        "result": "Error"
+      },
+      {
+        "val": "a / b",
+        "result": "Error"
+      }
+    ]
+  },
+  {
+    "given": [
+      {
+        "variable": "a",
+        "type": "Bool"
+      },
+      {
+          "variable": "b",
+          "type": "Bool"
+      }
+    ],
+    "results": [
+      {
+        "val": "a + b",
+        "result": "Error"
+      },
+      {
+        "val": "a - b",
+        "result": "Error"
+      },
+      {
+        "val": "a * b",
+        "result": "Error"
+      },
+      {
+        "val": "a / b",
+        "result": "Error"
+      }
+    ]
+  }
+]

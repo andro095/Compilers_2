@@ -1,14 +1,13 @@
 # Generated from /Users/andrerodriguez/Documents/Github/University/Compilers_2/Grammars/Inputs/YAPL/Yapl.g4 by ANTLR 4.10.1
 from antlr4 import *
 
-from colorama import Fore
-
 if __name__ is not None and "." in __name__:
     from .YaplParser import YaplParser
 else:
     from YaplParser import YaplParser
 
-from SymbolTable import SymbolTable, constants, types
+from SymbolTable import SymbolTable, constants
+from TypesSystem import types_sys
 from utils import indx
 
 
@@ -18,6 +17,7 @@ from utils import indx
 class YaplListener(ParseTreeListener):
     def __init__(self):
         self.symbol_table = SymbolTable()
+
 
     def assign_value(self, ctx: YaplParser.ExprContext):
         self.symbol_table.set(ctx.children[0].getText(), ctx.children[0].symbol.line, ctx.children[2].getText())
