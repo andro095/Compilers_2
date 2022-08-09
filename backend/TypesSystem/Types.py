@@ -12,15 +12,15 @@ class Types:
     def read_individual_types(self):
         with open('./TypesSystem/Rules/individual_rules.json', 'r') as f:
             self.individual_types = json.load(f)
-        print("Individual Types:\n")
-        pprint(self.individual_types)
+        # print("Individual Types:\n")
+        # pprint(self.individual_types)
 
     def read_complex_types(self):
         with open('./TypesSystem/Rules/complex_rules.json', 'r') as f:
             self.complex_types = json.load(f)
 
-        print("Complex Types:\n")
-        pprint(self.complex_types)
+        # print("Complex Types:\n")
+        # pprint(self.complex_types)
 
 
 types_sys = Types()

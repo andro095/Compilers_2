@@ -83,6 +83,7 @@ class YaplListener(ParseTreeListener):
         # print(Fore.RESET, 'Programa adios: %s' % ctx.getText())
         # #print(Fore.YELLOW, 'Scope actual: ', self.symbol_table.get_scope())
         print(str(self.symbol_table))
+        return 'Programa adios: %s' % ctx.getText()
 
     # Enter a parse tree produced by YaplParser#class.
     def enterClass(self, ctx: YaplParser.ClassContext):
