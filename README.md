@@ -1,5 +1,117 @@
-# Compilers_2
-Repositorio para el curso de compiladores 2
+# Analizador Semántico
 
-Link actualizado, no se la razon pero nos tura siempre los videos por derechos de autor. 
-Video -- > https://youtu.be/3TWhGTVmFOs
+## Creadores:
+|      Nombre     | # Carnet |
+|:---------------:|:--------:|
+| André Rodríguez |   18332  |
+|  Sara Zaravala  |   18893  |
+
+## Requerimientos del sistema:
+- Python 3.10 o más reciente
+- Node 16.14.2 o version más actual
+- Git versión más actual
+
+## Instalación
+### Repositorio
+Clonar el Repositorio donde se desee:
+HTTPS: 
+```
+git clone https://github.com/andro095/Compilers_2.git
+```
+
+SSH:
+```
+git clone git@github.com:andro095/Compilers_2.git
+```
+
+GithubCLI (tener instalado la herramienta para poder usar esta opción):
+```
+gh repo clone andro095/Compilers_2
+```
+
+Luego se ingresa a la carpeta clonada:
+```
+cd Compilers_2
+```
+
+### Backend
+#### Venv (Opcional):
+Creamos un ambiente venv:
+```
+python -m venv venv 
+```
+
+Activamos el venv:
+Windows: 
+```
+.\venv\Scripts\activate
+```
+
+Mac o Linux:
+```
+source venv\Scripts\activate
+```
+
+#### Paquetes
+Instalamos los paquetes necesarios:
+```
+pip install -r requirements.txt
+```
+
+Si creamos un venv:
+```
+deactivate
+```
+
+### Frontend
+Ingresamos a la carpeta de frontend:
+```
+cd Frontend
+```
+
+Instalamos los paquetes:
+```
+npm install
+```
+
+## Inicio del programa
+Nos ubicamos en en la carpeta donde está el programa
+```
+cd path/to/Compilers_2
+```
+
+### Backend
+#### Mac o Linux
+Corremos el script:
+```
+bash server_init.sh
+```
+
+#### Windows
+Si creamos un venv lo activamos:
+```
+.\venv\Scripts\activate
+```
+
+Ingresamos a la carpeta backend:
+```
+cd backend
+```
+
+Activamos el servidor:
+```
+uvicorn main:app --reload
+```
+
+### Frontend
+Iniciamos otra ventana o pestaña de la terminal. Nos vamos a la carpeta del frontend:
+```
+cd path/to/Compilers_2/frontend
+```
+
+Corremos el frontend
+```
+npm start
+```
+
+Nos dirigimos al [localhost:3000](http://localhost:3000)
