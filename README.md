@@ -33,7 +33,16 @@ Luego se ingresa a la carpeta clonada:
 ```
 cd Compilers_2
 ```
+### Mac o Linux:
+```
+bash proyect_setup.sh
+```
+### Windows:
 
+```
+& ./proyect_setup.ps1
+```
+### Manual
 ### Backend
 #### Venv (Opcional):
 Creamos un ambiente venv:
@@ -44,12 +53,12 @@ python -m venv venv
 Activamos el venv:
 Windows: 
 ```
-.\venv\Scripts\activate
+& venv/bin/activate
 ```
 
 Mac o Linux:
 ```
-source venv\Scripts\activate
+source venv/bin/activate
 ```
 
 #### Paquetes
@@ -82,17 +91,28 @@ cd path/to/Compilers_2
 
 ### Backend
 #### Mac o Linux
-Corremos el script:
 ```
 bash server_init.sh
+```
+#### Windows
+```
+& ./server_init.ps1
+```
+
+### Manual
+#### Venv (si lo creamos)
+#### Mac o Linux
+```
+source venv/bin/activate
 ```
 
 #### Windows
 Si creamos un venv lo activamos:
 ```
-.\venv\Scripts\activate
+& venv/bin/activate
 ```
 
+#### Iniciar el servidor
 Ingresamos a la carpeta backend:
 ```
 cd backend

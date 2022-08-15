@@ -8,17 +8,18 @@ const msgTypes = {
     success: 'text-green-500'
 }
 
-export const ConsoleMessage = ({ type = 'info', msg }) => {
+export const ConsoleMessage = ({ type = 'info', color, msg }) => {
     
 
     return (
-        <div className={ msgTypes[type] }>
+        <div className={ color ? `text-${color}-500` : msgTypes[type] }>
             <p className='m-0 mb-1'>{ msg }</p>
         </div>
     )
 }
 
 ConsoleMessage.propTypes = {
+    color: PropTypes.string,
     type: PropTypes.string,
     msg: PropTypes.string.isRequired
 }

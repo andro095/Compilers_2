@@ -11,9 +11,8 @@ export const useExecute = () => {
 
         axios.post("/execute", { code: program })
             .then(res => {
-                console.log(res.data);
+                setMsgs(res.data.messages);
             });
-        // console.log(program);
     }
 
     return {

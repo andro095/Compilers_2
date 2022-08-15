@@ -9,4 +9,7 @@ body {
 .h-fit-content {
   height: fit-content;
 }
+.white-space-pre-wrap {
+  white-space: pre-wrap;
+}
 

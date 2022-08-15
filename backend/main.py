@@ -1,10 +1,22 @@
-from pydantic import BaseModel
-from antlr4 import *
-from YAPL import YaplLexer, YaplParser, YaplListener, YaplVisitor, YaplErrorListener
+# Librerias de Python
+import sys
 import os
+
+# Librerias de terceros
+from antlr4 import FileStream, CommonTokenStream, ParseTreeWalker
 from fastapi import FastAPI
+from pydantic import BaseModel
+
+sys.path.append('./MyModules')
+
+# Librerias Propias
+from YAPL import YaplLexer, YaplParser, YaplListener, YaplErrorListener
+from ConsoleMessages import MessagesDB
+from Constants import global_constants
 
 app = FastAPI()
+msgs_db = MessagesDB()
+
 
 class Code(BaseModel):
     code: str
@@ -16,28 +28,33 @@ def upload_file():
 
 @app.post("/execute")
 def execute_code(code: Code):
-    with open('code.txt', 'w') as f:
+    with open(global_constants.CODE_TRANSFER_FILENAME, 'w') as f:
         f.write(code.code)
         f.close()
         
     process_code()
+    messages = msgs_db.messages
+    
+    del msgs_db.messages
         
-    return {"code": code.code}
+    return { 'messages': messages }
 
 def process_code():
-    input = FileStream('code.txt')
+    f_stream = FileStream(global_constants.CODE_TRANSFER_FILENAME)
     
-    os.remove('code.txt')
+    os.remove(global_constants.CODE_TRANSFER_FILENAME)
     
-    lexer = YaplLexer(input)
+    lexer = YaplLexer(f_stream)
     
     stream = CommonTokenStream(lexer)
     parser = YaplParser(stream)
-    parser.addErrorListener(YaplErrorListener())
+    parser.removeErrorListeners()
+    parser.addErrorListener(YaplErrorListener.INSTANCE)
     tree = parser.program()
     printer = YaplListener()
     walker = ParseTreeWalker()
-    res = walker.walk(printer, tree)
+    walker.walk(printer, tree)
+    
 
 
 

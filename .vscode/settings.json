@@ -1,0 +1,7 @@
+{
+    "python.analysis.extraPaths": [
+        "./backend/MyModules",
+        "./venv/lib/python3.10/site-packages"
+    ],
+    "task.allowAutomaticTasks": true
+}

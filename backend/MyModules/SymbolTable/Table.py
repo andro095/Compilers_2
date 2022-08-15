@@ -1,12 +1,15 @@
 from .Constants import constants
-from utils import *
+from utils import error
 from tabulate import tabulate
+from ConsoleMessages import MessagesDB
 
 
+# TODO: Remplazar los errores de consola por errores de la clase MessagesDB
 class SymbolTable:
     def __init__(self):
         self.table = []
         self.scopes = [constants.GLOBAL]
+        self.msgs_db = MessagesDB()
 
     def push_scope(self, scope):
         self.scopes.append(scope)
