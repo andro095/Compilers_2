@@ -3,7 +3,7 @@ import sys
 import os
 
 # Librerias de terceros
-from antlr4 import FileStream, CommonTokenStream, ParseTreeWalker
+from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 from fastapi import FastAPI
 from pydantic import BaseModel
 
@@ -24,27 +24,24 @@ class Code(BaseModel):
 
 @app.post("/upload")
 def upload_file():
+    """_summary_: Función para controlar un error del frontend.
+    """    
     pass
 
 @app.post("/execute")
-def execute_code(code: Code):
-    with open(global_constants.CODE_TRANSFER_FILENAME, 'w') as f:
-        f.write(code.code)
-        f.close()
-        
-    process_code()
-    messages = msgs_db.messages
-    
-    del msgs_db.messages
-        
-    return { 'messages': messages }
+def execute_code(code: Code) -> dict:
+    """Función para ejecutar el código de YAPL.
 
-def process_code():
-    f_stream = FileStream(global_constants.CODE_TRANSFER_FILENAME)
+    Argumentos:
+        code (Code): Código de YAPL.
+
+    Retorna:
+        dict: Diccionario con los mensajes de salida.
+    """            
     
-    os.remove(global_constants.CODE_TRANSFER_FILENAME)
+    i_stream = InputStream(code.code)
     
-    lexer = YaplLexer(f_stream)
+    lexer = YaplLexer(i_stream)
     
     stream = CommonTokenStream(lexer)
     parser = YaplParser(stream)
@@ -54,7 +51,13 @@ def process_code():
     printer = YaplListener()
     walker = ParseTreeWalker()
     walker.walk(printer, tree)
+
+    messages = msgs_db.messages
     
+    del msgs_db.messages
+        
+    return { 'messages': messages }
+
 
 
 

@@ -1,0 +1,35 @@
+{{! Google Docstring Template }}
+{{summaryPlaceholder}}
+
+{{extendedSummaryPlaceholder}}
+{{#parametersExist}}
+
+Argumentos:
+{{#args}}
+    {{var}} ({{typePlaceholder}}): {{descriptionPlaceholder}}
+{{/args}}
+{{#kwargs}}
+    {{var}} ({{typePlaceholder}}, optional): {{descriptionPlaceholder}}. Valor por defecto {{&default}}.
+{{/kwargs}}
+{{/parametersExist}}
+{{#exceptionsExist}}
+
+Errores:
+{{#exceptions}}
+    {{type}}: {{descriptionPlaceholder}}
+{{/exceptions}}
+{{/exceptionsExist}}
+{{#returnsExist}}
+
+Retorna:
+{{#returns}}
+    {{typePlaceholder}}: {{descriptionPlaceholder}}
+{{/returns}}
+{{/returnsExist}}
+{{#yieldsExist}}
+
+Genera:
+{{#yields}}
+    {{typePlaceholder}}: {{descriptionPlaceholder}}
+{{/yields}}
+{{/yieldsExist}}
