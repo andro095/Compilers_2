@@ -54,6 +54,8 @@ class Constants:
     
     ARROW_ASIGN = '<-'
     TYPE_DELIMITER = ':'
+    CROUND = ')'
+    COMMA = ','
     INHERITS = ['inherits', 'INHERITS']
     
     types = BasicTypes()    

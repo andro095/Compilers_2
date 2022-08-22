@@ -32,9 +32,13 @@ class SymbolTable:
     
     def check_main(self):
         for row in self.tables[0].items:
-            if row.lex == constants.MAIN:
-                return True
-            
+            if row.lex == constants.MAIN and row.inherits is not None:
+                main_table = self.tables[self.get_table_index(constants.MAIN)]
+                
+                for rw in main_table.items:
+                    if rw.lex.lower() == constants.MAIN.lower() and rw.param_num == 0:
+                        return True
+                
         return False
     
     def add_int(self):
@@ -222,6 +226,17 @@ class SymbolTable:
 
     def pop_scope(self) -> None:
         self.scopes.pop()
+        
+    def enter_scope(self, scope: str) -> None:
+        self.scopes.append(self.get_table_index(scope))
+        
+    def exit_scope(self) -> None:
+        self.scopes.pop()
+        
+    def get_table_index(self, scope: str) -> int:
+        for i, table in enumerate(self.tables):
+            if table.name == scope:
+                return i
         
     def insert(self, item: TableItem) -> None:
         if (item.lex, item.sem_kind) in map(lambda x: (x.lex, x.sem_kind), self.tables[-1].items):

@@ -37,7 +37,8 @@ class YaplListener(ParseTreeListener):
         self.insert_log('Saliendo del programa.')
         self.insert_scope_message()
         if not self.table_operations.check_main():
-            self.msg_db.insert_error((0, 0), 'No se encuentra la clase main')
+            # Todo: Cambiar el mensaje de error
+            self.msg_db.insert_error((0, 0), 'No se encuentra la clase main o no esta declarada de manera correcta.')
         print('Tablas de símbolos:\n %s.' % str(self.table_operations.table))
         
 

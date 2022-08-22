@@ -49,6 +49,12 @@ class TableOperations:
         children, line = self.get_ctx_attr(ctx)
         ind = indx(children, constants.TYPE_DELIMITER)
         sem_kind = constants.METHOD if children[1] != constants.TYPE_DELIMITER else constants.ATTR    
+        param_num = 0
+        
+        if sem_kind == constants.METHOD:
+            cround = indx(children, constants.CROUND)
+            param_num = len(list(filter(lambda x: x != constants.COMMA, children[2:cround])))
+        
         
         table_item = TableItem(
             lex=children[0],
@@ -56,7 +62,8 @@ class TableOperations:
             typ=children[ind + 1],
             line=line,
             sem_kind=sem_kind,
-            param_method=constants.REF
+            param_method=constants.REF,
+            param_num=param_num
         )
         self.symbol_table.insert(table_item)
         
