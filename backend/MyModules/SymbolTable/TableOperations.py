@@ -1,7 +1,8 @@
-from .Table import SymbolTable
-from .Constants import constants
+from .Table import SymbolTable, TableItem
+from .Constants import constants, types
 from YAPL import YaplParser
 from utils import indx
+from antlr4 import ParserRuleContext
 
 class TableOperations:
     def __init__(self, symbol_table: SymbolTable) -> None:
@@ -10,50 +11,73 @@ class TableOperations:
     def assign_value(self, ctx: YaplParser.ExprContext):
         self.symbol_table.set(ctx.children[0].getText(), ctx.children[0].symbol.line, ctx.children[2].getText())
     
-    def insert_self(self, line: int):
-        name = 'self'
-        kind = constants.ATTR
-        typ = constants.SELF_TYPE
-        scope = self.symbol_table.get_scope()
-        self.symbol_table.insert(name, typ, kind, scope, line)
+    def get_ctx_attr(self, ctx: ParserRuleContext):
+        children = list(map(lambda x: x.getText(), ctx.children))
+        line = (ctx.children[0].symbol.line, ctx.children[0].symbol.column)
+        
+        return children, line
+    
+    def insert_self(self, line: tuple[int, int]):
+        
+        table_item = TableItem(
+            lex=constants.SELF,
+            token=types.ID,
+            typ=constants.SELF_TYPE,
+            line=line,
+            sem_kind=constants.ATTR,
+            param_method=constants.REF
+        )
+        self.symbol_table.insert(table_item)
         
     def insert_class(self, ctx: YaplParser.ClassContext):
-        children = list(map(lambda x: x.getText(), ctx.children))
-        name = children[1]
-        kind = constants.CLASS
-        ind = indx(children, 'inherits')
-        typ = children[ind + 1] if ind != -1 else 'Object'
-        line = ctx.children[0].symbol.line
-        scope = self.symbol_table.get_scope()
-        self.symbol_table.insert(name, typ, kind, scope, line)
+        children, line = self.get_ctx_attr(ctx)
+        ind = indx(children, constants.INHERITS[0])
+        if ind == -1:
+            ind = indx(children, constants.INHERITS[1])
+        table_item = TableItem(
+            lex=children[1],
+            token=ctx.children[1].symbol.type,
+            inherits=children[ind + 1] if ind != -1 else constants.types.OBJECT,
+            line=line,
+            sem_kind=constants.CLASS,
+            param_method=constants.REF            
+        )
+        
+        self.symbol_table.insert(table_item)
     
     def insert_feature(self, ctx: YaplParser.FeatureContext):
-        children = list(map(lambda x: x.getText(), ctx.children))
-        name = children[0]
-        kind = constants.METHOD if children[1] != ':' else constants.ATTR
-        ind = indx(children, ':')
-        typ = children[ind + 1]
-        line = ctx.children[0].symbol.line
-        value = None
-        scope = self.symbol_table.get_scope()
-
-        if kind == 'method':
+        children, line = self.get_ctx_attr(ctx)
+        ind = indx(children, constants.TYPE_DELIMITER)
+        sem_kind = constants.METHOD if children[1] != constants.TYPE_DELIMITER else constants.ATTR    
+        
+        table_item = TableItem(
+            lex=children[0],
+            token=ctx.children[1].symbol.type,
+            typ=children[ind + 1],
+            line=line,
+            sem_kind=sem_kind,
+            param_method=constants.REF
+        )
+        self.symbol_table.insert(table_item)
+        
+        if sem_kind == constants.METHOD:
             self.symbol_table.push_scope(children[0])
-        else:
-            index = indx(children, '<-')
-            if index != -1:
-                value = children[index + 1]
+        
 
-        self.symbol_table.insert(name, typ, kind, scope, line, value)
         
     def insert_formal(self, ctx: YaplParser.FormalContext):
-        children = list(map(lambda x: x.getText(), ctx.children))
-        name = children[0]
-        kind = constants.PARAMETER
-        typ = children[2]
-        line = ctx.children[0].symbol.line
-        scope = self.symbol_table.get_scope()
-        self.symbol_table.insert(name, typ, kind, scope, line)
+        children, line = self.get_ctx_attr(ctx)
+        
+        table_item = TableItem(
+            lex=children[0],
+            token=ctx.children[1].symbol.type,
+            typ=children[2],
+            line=line,
+            sem_kind=constants.PARAMETER,
+            param_method=constants.REF,
+        )
+        
+        self.symbol_table.insert(table_item)
         
     def insert_expr(self, ctx: YaplParser.ExprContext):
         pass
@@ -63,7 +87,11 @@ class TableOperations:
         
     def pop_scope(self):
         self.symbol_table.pop_scope()
+        
+    def check_main(self):
+        return self.symbol_table.check_main()
     
-    def get_table(self) -> SymbolTable:
+    @property
+    def table(self) -> SymbolTable:
         return self.symbol_table
     

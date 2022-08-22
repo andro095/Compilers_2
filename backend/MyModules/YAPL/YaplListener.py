@@ -9,10 +9,7 @@ else:
 from SymbolTable import SymbolTable, TableOperations
 
 from ConsoleMessages import MessagesDB
-from Constants import global_constants
 
-
-# TODO: Mover la insersión de valores a una clase aparte
 # TODO: Realizar la insersión de valores en las funciones exit
 # This class defines a complete listener for a parse tree produced by YaplParser.
 class YaplListener(ParseTreeListener):
@@ -22,7 +19,7 @@ class YaplListener(ParseTreeListener):
         self.logs = []
         
     def insert_scope_message(self):
-        self.msg_db.insert_message('Scope actual: %s.' % self.table_operations.get_table().get_scope(), 'yellow')
+        self.msg_db.insert_message('Scope actual: %s.' % self.table_operations.table.actual_scope, 'yellow')
     
     def insert_log(self, message: str, color: str = None):
         if color:
@@ -39,7 +36,9 @@ class YaplListener(ParseTreeListener):
     def exitProgram(self, ctx: YaplParser.ProgramContext):
         self.insert_log('Saliendo del programa.')
         self.insert_scope_message()
-        self.insert_log('Tabla de símbolos:\n %s.' % str(self.table_operations.get_table()))
+        if not self.table_operations.check_main():
+            self.msg_db.insert_error((0, 0), 'No se encuentra la clase main')
+        print('Tablas de símbolos:\n %s.' % str(self.table_operations.table))
         
 
     # Enter a parse tree produced by YaplParser#class.
@@ -47,7 +46,8 @@ class YaplListener(ParseTreeListener):
         self.insert_log('Entrando a la clase %s.' % ctx.children[1].getText(), 'purple')
         self.table_operations.insert_class(ctx)
         self.table_operations.push_scope(ctx.children[1].getText())
-        self.table_operations.insert_self(ctx.children[0].symbol.line)
+        line = (ctx.children[0].symbol.line, ctx.children[0].symbol.column)
+        self.table_operations.insert_self(line)
         self.insert_scope_message()
 
     # Exit a parse tree produced by YaplParser#class.
@@ -81,10 +81,7 @@ class YaplListener(ParseTreeListener):
     def enterExpr(self, ctx: YaplParser.ExprContext):
         if not ctx.children:
             return
-        children = list(map(lambda x: x.getText(), ctx.children))
         self.insert_log('Entrando a la expresión %s.' % ctx.getText(), 'red')
-        if '<-' in children:
-            self.table_operations.assign_value(ctx)
         self.insert_scope_message()
 
     # Exit a parse tree produced by YaplParser#expr.

@@ -3,5 +3,8 @@
         "./backend/MyModules",
         "./venv/lib/python3.10/site-packages"
     ],
-    "task.allowAutomaticTasks": true
+    "task.allowAutomaticTasks": true,
+    "search.useGlobalIgnoreFiles": true,
+    "search.useIgnoreFiles": true,
+    "search.useParentIgnoreFiles": true
 }

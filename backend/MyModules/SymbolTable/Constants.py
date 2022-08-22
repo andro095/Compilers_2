@@ -1,5 +1,38 @@
+
+
+
+import io
+from typing import Literal
+
+
+class ObjectConstants:
+    ABORT = "abort"
+    TYPE_NAME = 'type_name' 
+    COPY = 'copy'
+    
+class StringConstants:
+    LENGTH = 'length'
+    CONCAT = 'concat'
+    SUBSTR = 'substr'
+    
+class IOConstants:
+    OUT_STRING = 'out_string'
+    OUT_INT = 'out_int'
+    IN_STRING = 'in_string'
+    IN_INT = 'in_int'
+    
+class BasicTypes:
+    INT = 'Int'
+    BOOL = 'Bool'
+    OBJECT = 'Object'
+    STRING = 'String'
+    IO = 'IO'
+    SELF_TYPE = 'SELF_TYPE'
+
 class Constants:
     GLOBAL = 'Global'
+    
+    MAIN = 'Main'
 
     ATTR = 'attr'
     METHOD = 'method'
@@ -7,6 +40,7 @@ class Constants:
     CLASS = 'class'
 
     SELF_TYPE = 'SELF_TYPE'
+    SELF = 'self'
 
     KIND_TABLE_ERROR = {
         ATTR: 'Variable',
@@ -14,6 +48,21 @@ class Constants:
         PARAMETER: 'Parámetro',
         CLASS: 'Clase'
     }
+    
+    REF = 'ref'
+    VALUE = 'value'
+    
+    ARROW_ASIGN = '<-'
+    TYPE_DELIMITER = ':'
+    INHERITS = ['inherits', 'INHERITS']
+    
+    types = BasicTypes()    
+    
+    object = ObjectConstants()
+    string = StringConstants()
+    io = IOConstants()
+    
+    
 
 
 class TypesConstants:

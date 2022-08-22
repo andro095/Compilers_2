@@ -12,7 +12,7 @@ sys.path.append('./MyModules')
 # Librerias Propias
 from YAPL import YaplLexer, YaplParser, YaplListener, YaplErrorListener
 from ConsoleMessages import MessagesDB
-from Constants import global_constants
+from Global import global_constants
 
 app = FastAPI()
 msgs_db = MessagesDB()
