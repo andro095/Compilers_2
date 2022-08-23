@@ -10,9 +10,6 @@ class TableOperations:
     def __init__(self) -> None:
         self.symbol_table = SymbolTable()
         self.msgs_db = MessagesDB()
-        
-    def assign_value(self, ctx: YaplParser.ExprContext):
-        self.symbol_table.set(ctx.children[0].getText(), ctx.children[0].symbol.line, ctx.children[2].getText())
     
     def get_ctx_attr(self, ctx: ParserRuleContext):
         children = list(map(lambda x: x.getText(), ctx.children))
@@ -30,9 +27,9 @@ class TableOperations:
             sem_kind=constants.ATTR,
             param_method=constants.REF
         )
-        self.symbol_table.insert(table_item)
+        return self.symbol_table.insert(table_item)
         
-    def insert_class(self, ctx: YaplParser.ClassContext):
+    def insert_class(self, ctx: YaplParser.ClassContext) -> bool:
         children, line = self.get_ctx_attr(ctx)
         ind = indx(children, constants.INHERITS[0])
         if ind == -1:
@@ -40,7 +37,7 @@ class TableOperations:
             
         if ind != -1 and children[ind + 1] in constants.BASIC_TYPES:
                 self.msgs_db.insert_error(line, f'La clase {children[1]} no puede heredar de {children[ind + 1]}')
-                return
+                return False
            
         table_item = TableItem(
             lex=children[1],
@@ -51,9 +48,9 @@ class TableOperations:
             param_method=constants.REF            
         )
         
-        self.symbol_table.insert(table_item)
+        return self.symbol_table.insert(table_item)
     
-    def insert_feature(self, ctx: YaplParser.FeatureContext):
+    def insert_feature(self, ctx: YaplParser.FeatureContext) -> bool:
         children, line = self.get_ctx_attr(ctx)
         ind = indx(children, constants.TYPE_DELIMITER)
         sem_kind = constants.METHOD if children[1] != constants.TYPE_DELIMITER else constants.ATTR    
@@ -73,15 +70,12 @@ class TableOperations:
             param_method=constants.REF,
             param_num=param_num
         )
-        insert_res = self.symbol_table.insert(table_item)
+        return self.symbol_table.insert(table_item)
         
-        if sem_kind == constants.METHOD:
-            print("Empujando scope", children[0])
-            self.symbol_table.push_scope(children[0])
         
 
         
-    def insert_formal(self, ctx: YaplParser.FormalContext):
+    def insert_formal(self, ctx: YaplParser.FormalContext) -> bool:
         children, line = self.get_ctx_attr(ctx)
         
         table_item = TableItem(
@@ -93,9 +87,9 @@ class TableOperations:
             param_method=constants.REF,
         )
         
-        self.symbol_table.insert(table_item)
+        return self.symbol_table.insert(table_item)
         
-    def insert_expr(self, ctx: YaplParser.ExprContext):
+    def insert_expr(self, ctx: YaplParser.ExprContext) -> bool:
         children, line = self.get_ctx_attr(ctx)
         
         print(children)
@@ -109,30 +103,29 @@ class TableOperations:
                 sem_kind=constants.EXPR,
                 param_num=param_num
             )
-            self.symbol_table.insert(table_item)
-            self.symbol_table.push_scope(constants.LET + str(self.symbol_table.lets_counter))
-            self.symbol_table.lets_counter += 1
+            inserted = self.symbol_table.insert(table_item)
             
-            type_delimiter_indexes = []
-            for i in range(len(children)):
-                if children[i] == constants.TYPE_DELIMITER:
-                    type_delimiter_indexes.append(i)
-                    
-            for i in type_delimiter_indexes:
-                table_item = TableItem(
-                    lex=children[i - 1],
-                    token=ctx.children[i - 1].symbol.type,
-                    typ=children[i + 1],
-                    line=line,
-                    sem_kind=constants.ATTR,
-                    param_method=constants.REF
-                )
-                self.symbol_table.insert(table_item)
-            
-            self.symbol_table.pop_scope()
+            if inserted:
+                self.symbol_table.push_scope(constants.LET + str(self.symbol_table.lets_counter))
+                self.symbol_table.lets_counter += 1
+                
+                type_delimiter_indexes = []
+                for i in range(len(children)):
+                    if children[i] == constants.TYPE_DELIMITER:
+                        type_delimiter_indexes.append(i)
+                        
+                for i in type_delimiter_indexes:
+                    table_item = TableItem(
+                        lex=children[i - 1],
+                        token=ctx.children[i - 1].symbol.type,
+                        typ=children[i + 1],
+                        line=line,
+                        sem_kind=constants.ATTR,
+                        param_method=constants.REF
+                    )
+                    self.symbol_table.insert(table_item)
+                
+                self.symbol_table.pop_scope()
     
-    
-    @property
-    def table(self) -> SymbolTable:
-        return self.symbol_table
+            return inserted
     
