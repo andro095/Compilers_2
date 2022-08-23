@@ -38,6 +38,7 @@ class Constants:
     METHOD = 'method'
     PARAMETER = 'parameter'
     CLASS = 'class'
+    EXPR = 'expr'
 
     SELF_TYPE = 'SELF_TYPE'
     SELF = 'self'
@@ -57,6 +58,7 @@ class Constants:
     CROUND = ')'
     COMMA = ','
     INHERITS = ['inherits', 'INHERITS']
+    LET = 'let'
     
     types = BasicTypes()    
     

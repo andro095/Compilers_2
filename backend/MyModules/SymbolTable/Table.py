@@ -26,6 +26,7 @@ class SymbolTable(metaclass=MySingleton):
         self.tables = [Table(name=constants.GLOBAL)]
         self.scopes = [0]
         self.msgs_db = MessagesDB()
+        self.lets_counter = 0
         
         self.add_basic_types()
         
@@ -253,11 +254,12 @@ class SymbolTable(metaclass=MySingleton):
             if table.name == scope:
                 return i
         
-    def insert(self, item: TableItem) -> None:
-        if (item.lex, item.sem_kind) in map(lambda x: (x.lex, x.sem_kind), self.tables[-1].items):
+    def insert(self, item: TableItem) -> None | bool:
+        if (item.lex, item.sem_kind) in map(lambda x: (x.lex, x.sem_kind), self.tables[self.actual_scope].items):
             self.msgs_db.insert_error(item.line, constants.KIND_TABLE_ERROR[item.sem_kind] + ' ' + item.lex + ' ya declarada ')
-            
-        self.tables[self.actual_scope].items.append(item)
+            return False
+        else:
+            self.tables[self.actual_scope].items.append(item)
 
 
     def get(self, name):
@@ -280,6 +282,7 @@ class SymbolTable(metaclass=MySingleton):
     def symbol_table(self):
         self.tables = [Table(name=constants.GLOBAL)]
         self.scopes = [0]
+        self.lets_counter = 0
 
     def __str__(self):
         mystr = ''

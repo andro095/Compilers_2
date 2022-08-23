@@ -10,6 +10,8 @@ from SymbolTable import SymbolTable, TableOperations
 
 from ConsoleMessages import MessagesDB
 
+from .YaplConstants import constants
+
 # TODO: Realizar la insersión de valores en las funciones exit
 # This class defines a complete listener for a parse tree produced by YaplParser.
 class YaplListener(ParseTreeListener):
@@ -39,7 +41,7 @@ class YaplListener(ParseTreeListener):
         self.insert_log('Saliendo del programa.')
         # self.insert_scope_message()
         self.symbol_table.check_main()
-        print('Tablas de símbolos:\n %s.' % str(self.table_operations.table))
+        # print('Tablas de símbolos:\n %s.' % str(self.table_operations.table))
         
 
     # Enter a parse tree produced by YaplParser#class.
@@ -59,14 +61,15 @@ class YaplListener(ParseTreeListener):
 
     # Enter a parse tree produced by YaplParser#feature.
     def enterFeature(self, ctx: YaplParser.FeatureContext):
-        # self.insert_log('Entrando al atributo %s.' % ctx.children[0].getText(), 'blue')
+        self.insert_log('Entrando al atributo %s.' % ctx.children[0].getText(), 'blue')
         self.table_operations.insert_feature(ctx)
 
     # Exit a parse tree produced by YaplParser#feature.
     def exitFeature(self, ctx: YaplParser.FeatureContext):
-        # self.insert_log('Saliendo del atributo %s.' % ctx.children[0].getText(), 'blue')
-        if ctx.children[1].getText() != ':':
+        if ctx.children[1].getText() != constants.TYPE_DELIMITER:
+            self.insert_log('Salgo del scope', 'blue')
             self.symbol_table.pop_scope()
+        self.insert_log('Saliendo del atributo %s.' % ctx.children[0].getText(), 'blue')
             # self.insert_scope_message()
 
     # Enter a parse tree produced by YaplParser#formal.
@@ -83,12 +86,15 @@ class YaplListener(ParseTreeListener):
     def enterExpr(self, ctx: YaplParser.ExprContext):
         if not ctx.children:
             return
-        # self.insert_log('Entrando a la expresión %s.' % ctx.getText(), 'red')
+        if ctx.children[0].getText().lower() == constants.LET:
+            self.table_operations.insert_expr(ctx)
+            # self.insert_scope_message()
+        self.insert_log('Entrando a la expresión %s.' % ctx.getText(), 'red')
         # self.insert_scope_message()
 
     # Exit a parse tree produced by YaplParser#expr.
     def exitExpr(self, ctx: YaplParser.ExprContext):
-        # self.insert_log('Saliendo de la expresión %s.' % ctx.getText(), 'red')
+        self.insert_log('Saliendo de la expresión %s.' % ctx.getText(), 'red')
         # self.insert_scope_message()
         pass
 
