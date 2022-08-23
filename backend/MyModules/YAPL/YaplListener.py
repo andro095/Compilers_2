@@ -41,7 +41,7 @@ class YaplListener(ParseTreeListener):
         self.insert_log('Saliendo del programa.')
         # self.insert_scope_message()
         self.symbol_table.check_main()
-        # print('Tablas de símbolos:\n %s.' % str(self.table_operations.table))
+        print('Tablas de símbolos:\n %s.' % str(self.table_operations.table))
         
 
     # Enter a parse tree produced by YaplParser#class.

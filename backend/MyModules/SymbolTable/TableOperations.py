@@ -75,7 +75,7 @@ class TableOperations:
         )
         insert_res = self.symbol_table.insert(table_item)
         
-        if sem_kind == constants.METHOD and insert_res is None:
+        if sem_kind == constants.METHOD:
             print("Empujando scope", children[0])
             self.symbol_table.push_scope(children[0])
         
