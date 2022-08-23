@@ -1,18 +1,8 @@
 from .Message import Message, make_message
 from Global import global_constants
+from Singleton import MySingleton
 
-class SingletonMessages(type):
-
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            instance = super().__call__(*args, **kwargs)
-            cls._instances[cls] = instance
-        return cls._instances[cls]
-
-
-class MessagesDB(metaclass=SingletonMessages):
+class MessagesDB(metaclass=MySingleton):
     def __init__(self):
         self.__messages: list[Message] = []
         

@@ -12,10 +12,11 @@ sys.path.append('./MyModules')
 # Librerias Propias
 from YAPL import YaplLexer, YaplParser, YaplListener, YaplErrorListener
 from ConsoleMessages import MessagesDB
-from Global import global_constants
+from SymbolTable import SymbolTable
 
 app = FastAPI()
 msgs_db = MessagesDB()
+sym_table = SymbolTable()
 
 
 class Code(BaseModel):
@@ -54,6 +55,7 @@ def execute_code(code: Code) -> dict:
 
     messages = msgs_db.messages
     
+    del sym_table.symbol_table
     del msgs_db.messages
         
     return { 'messages': messages }

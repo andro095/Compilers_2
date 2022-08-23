@@ -3,10 +3,12 @@ from .Constants import constants, types
 from YAPL import YaplParser
 from utils import indx
 from antlr4 import ParserRuleContext
+from ConsoleMessages import MessagesDB
 
 class TableOperations:
-    def __init__(self, symbol_table: SymbolTable) -> None:
-        self.symbol_table: SymbolTable = symbol_table
+    def __init__(self) -> None:
+        self.symbol_table = SymbolTable()
+        self.msgs_db = MessagesDB()
         
     def assign_value(self, ctx: YaplParser.ExprContext):
         self.symbol_table.set(ctx.children[0].getText(), ctx.children[0].symbol.line, ctx.children[2].getText())
@@ -34,10 +36,15 @@ class TableOperations:
         ind = indx(children, constants.INHERITS[0])
         if ind == -1:
             ind = indx(children, constants.INHERITS[1])
+            
+        if ind != -1 and children[ind + 1] in constants.BASIC_TYPES:
+                self.msgs_db.insert_error(line, f'La clase {children[1]} no puede heredar de {children[ind + 1]}')
+                return
+           
         table_item = TableItem(
             lex=children[1],
             token=ctx.children[1].symbol.type,
-            inherits=children[ind + 1] if ind != -1 else constants.types.OBJECT,
+            inherits=children[ind + 1] if ind != -1 else constants.types.OBJECT if children[1] != constants.MAIN else None,
             line=line,
             sem_kind=constants.CLASS,
             param_method=constants.REF            
@@ -89,14 +96,8 @@ class TableOperations:
     def insert_expr(self, ctx: YaplParser.ExprContext):
         pass
     
-    def push_scope(self, name):
-        self.symbol_table.push_scope(name)
-        
-    def pop_scope(self):
-        self.symbol_table.pop_scope()
-        
-    def check_main(self):
-        return self.symbol_table.check_main()
+    def reset(self):
+        self.symbol_table.reset()
     
     @property
     def table(self) -> SymbolTable:

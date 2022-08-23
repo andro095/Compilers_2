@@ -1,7 +1,9 @@
+from utils.Utils import indx
 from .Constants import constants, types
 from tabulate import tabulate
 from ConsoleMessages import MessagesDB
 from pydantic import BaseModel
+from Singleton import MySingleton
 
 class TableItem(BaseModel):
     lex: str
@@ -19,27 +21,40 @@ class Table(BaseModel):
     items: list[TableItem] = []
         
         
-
-
-# TODO: Remplazar los errores de consola por errores de la clase MessagesDB
-class SymbolTable:
+class SymbolTable(metaclass=MySingleton):
     def __init__(self):
         self.tables = [Table(name=constants.GLOBAL)]
         self.scopes = [0]
         self.msgs_db = MessagesDB()
         
         self.add_basic_types()
+        
     
-    def check_main(self):
-        for row in self.tables[0].items:
-            if row.lex == constants.MAIN and row.inherits is not None:
-                main_table = self.tables[self.get_table_index(constants.MAIN)]
-                
-                for rw in main_table.items:
-                    if rw.lex.lower() == constants.MAIN.lower() and rw.param_num == 0:
-                        return True
-                
-        return False
+    def check_main(self) -> None:
+        if self.check_main_existence():
+            main_indx = indx(list(map(lambda x: x.lex, self.tables[0].items)), constants.MAIN)
+            main_line = self.tables[0].items[main_indx].line
+            self.check_main_method(main_line)
+        else:
+            self.msgs_db.insert_error((0, 0), "No existe la clase main o está heredando de otra clase")
+         
+    def check_main_method(self, line: tuple[int, int]) -> None:
+        main_table_indx = self.get_table_index(constants.MAIN)
+        main_m_indx = indx(list(map(lambda x: x.lex.lower(), self.tables[main_table_indx].items)), constants.MAIN.lower())
+        
+        if main_m_indx < 0:
+            self.msgs_db.insert_error(line, "El método main no ha sido declarado")
+        else:
+            main_m: TableItem = self.tables[main_table_indx].items[main_m_indx]
+            
+            if main_m.param_num > 0:
+                self.msgs_db.insert_error(line, "El método main no debe tener parámetros")
+            
+            
+    
+    def check_main_existence(self) -> bool:
+        return any(map(lambda x: x.lex == constants.MAIN and x.inherits is None, self.tables[0].items))
+    
     
     def add_int(self):
         int_item = TableItem(
@@ -245,26 +260,26 @@ class SymbolTable:
         self.tables[self.actual_scope].items.append(item)
 
 
-    def get(self, name, line):
+    def get(self, name):
         for scope in reversed(self.scopes):
             for row in self.tables[scope].items:
                 if row.lex == name:
                     return row
                 
-        self.msgs_db.insert_error(line, f'Variable ${name} no declarada')
-
-    def set(self, name, line, value):
-        for scope in reversed(self.scopes):
-            for row in self.tables[scope].items:
-                if row.lex == name :
-                    row.value = value
-                    return
-
-        self.msgs_db.insert_error(line, f'Variable ${name} no declarada')
+        return None
 
     @property
     def actual_scope(self):
         return self.scopes[-1]
+    
+    @property
+    def symbol_table(self):
+        return self.tables
+    
+    @symbol_table.deleter
+    def symbol_table(self):
+        self.tables = [Table(name=constants.GLOBAL)]
+        self.scopes = [0]
 
     def __str__(self):
         mystr = ''

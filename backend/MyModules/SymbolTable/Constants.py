@@ -60,6 +60,8 @@ class Constants:
     
     types = BasicTypes()    
     
+    BASIC_TYPES = [types.INT, types.BOOL, types.STRING]
+    
     object = ObjectConstants()
     string = StringConstants()
     io = IOConstants()
