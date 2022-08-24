@@ -10,7 +10,7 @@ from pydantic import BaseModel
 sys.path.append('./MyModules')
 
 # Librerias Propias
-from YAPL import YaplLexer, YaplParser, YaplErrorListener, YaplVisitor
+from YAPL import YaplLexer, YaplParser, YaplErrorListener, YaplVisitor, YaplSysTypeVisitor
 from ConsoleMessages import MessagesDB
 from SymbolTable import SymbolTable
 
@@ -51,6 +51,8 @@ def execute_code(code: Code) -> dict:
     tree = parser.program()
     answer = YaplVisitor().visit(tree)
     print(answer)
+    answer2 = YaplSysTypeVisitor().visit(tree)
+    print(answer2)
 
     messages = msgs_db.messages
     

@@ -21,10 +21,11 @@ class YaplVisitor(ParseTreeVisitor):
         self.msg_db = MessagesDB()
         
     def insert_log(self, message: str, color: str = None):
-        if color:
-            self.msg_db.insert_message(message, color)
-        else:
-            self.msg_db.insert_message(message)
+        # if color:
+        #     self.msg_db.insert_message(message, color)
+        # else:
+        #     self.msg_db.insert_message(message)
+        pass
 
 
     # Visit a parse tree produced by YaplParser#program.
@@ -33,7 +34,7 @@ class YaplVisitor(ParseTreeVisitor):
         self.visitChildren(ctx)
         self.insert_log('Saliendo del programa.')
         self.symbol_table.check_main()
-        print('Tablas de símbolos:\n %s.' % str(self.symbol_table))
+        # print('Tablas de símbolos:\n %s.' % str(self.symbol_table))
 
 
     # Visit a parse tree produced by YaplParser#class.
