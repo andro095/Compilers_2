@@ -1,4 +1,4 @@
-# Librerias de Python
+    # Librerias de Python
 import sys
 import os
 
@@ -47,17 +47,18 @@ def execute_code(code: Code) -> dict:
     stream = CommonTokenStream(lexer)
     parser = YaplParser(stream)
     parser.removeErrorListeners()
-    parser.addErrorListener(YaplErrorListener.INSTANCE)
+    parser.addErrorListener(YaplErrorListener.INSTANCE)    
     tree = parser.program()
-    answer = YaplVisitor().visit(tree)
-    print(answer)
-    answer2 = YaplSysTypeVisitor().visit(tree)
-    print(answer2)
+    if not msgs_db.error_flag:
+        answer = YaplVisitor().visit(tree)
+        if not msgs_db.error_flag:
+            answer2 = YaplSysTypeVisitor().visit(tree)
 
     messages = msgs_db.messages
     
     del sym_table.symbol_table
     del msgs_db.messages
+    del msgs_db.error_flag
         
     return { 'messages': messages }
 

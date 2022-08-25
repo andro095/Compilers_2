@@ -270,6 +270,14 @@ class SymbolTable(metaclass=MySingleton):
                     return row
                 
         return None
+    
+    def exists(self, name):
+        for scope in reversed(self.scopes):
+            for row in self.tables[scope].items:
+                if row.lex == name:
+                    return True
+                
+        return False
 
     @property
     def actual_scope(self):

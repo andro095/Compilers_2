@@ -1,1 +1,1 @@
-from .GlobalConstants import global_constants, Error
+from .GlobalConstants import global_constants

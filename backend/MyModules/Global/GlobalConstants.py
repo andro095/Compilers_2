@@ -6,7 +6,12 @@ class GlobalConstants:
     WARNING = 'warning'
     SUCCESS = 'success'
     
-class Error(BaseModel):
-    msg: str
+    ERROR_TYPE = 'eRROR'
+    
+    ATTR = 'attr'
+    METHOD = 'method'
+    PARAMETER = 'parameter'
+    CLASS = 'class'
+    EXPR = 'expr'
     
 global_constants = GlobalConstants()

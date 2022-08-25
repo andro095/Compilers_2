@@ -34,11 +34,14 @@ class YaplVisitor(ParseTreeVisitor):
         self.visitChildren(ctx)
         self.insert_log('Saliendo del programa.')
         self.symbol_table.check_main()
-        # print('Tablas de símbolos:\n %s.' % str(self.symbol_table))
+        print('Tablas de símbolos:\n %s.' % str(self.symbol_table))
 
 
     # Visit a parse tree produced by YaplParser#class.
     def visitClass(self, ctx:YaplParser.ClassContext):
+        if self.msg_db.error_flag:
+            return
+         # ----   
         self.insert_log('Entrando a la clase %s.' % ctx.children[1].getText(), 'purple')
         inserted = self.table_operations.insert_class(ctx)
         if inserted:
@@ -54,6 +57,8 @@ class YaplVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by YaplParser#feature.
     def visitFeature(self, ctx:YaplParser.FeatureContext):
+        if self.msg_db.error_flag:
+            return
         self.insert_log('Entrando a la característica %s.' % ctx.children[0].getText(), 'blue')
         inserted = self.table_operations.insert_feature(ctx)
         if inserted:
@@ -69,6 +74,9 @@ class YaplVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by YaplParser#formal.
     def visitFormal(self, ctx:YaplParser.FormalContext):
+        if self.msg_db.error_flag:
+            return
+        
         self.insert_log('Entrando al parámetro %s.' % ctx.children[0].getText(), 'green')
         self.table_operations.insert_formal(ctx)
         self.insert_log('Saliendo del parámetro %s.' % ctx.children[0].getText(), 'green')
@@ -76,7 +84,11 @@ class YaplVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by YaplParser#expr.
     def visitExpr(self, ctx:YaplParser.ExprContext):
+        if self.msg_db.error_flag:
+            return
+    
         self.insert_log('Entrando a la expresión %s.' % ctx.getText(), 'pink')
+ 
         if not ctx.children:
             return
         if ctx.children[0].getText().lower() == constants.LET:

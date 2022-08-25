@@ -92,7 +92,7 @@ class TableOperations:
     def insert_expr(self, ctx: YaplParser.ExprContext) -> bool:
         children, line = self.get_ctx_attr(ctx)
         
-        print(children)
+        # print(children)
         
         if children[0].lower() == constants.LET:
             param_num = len(list(filter(lambda x: x == constants.TYPE_DELIMITER, children[2:-1])))

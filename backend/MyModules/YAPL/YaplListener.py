@@ -6,13 +6,6 @@ if __name__ is not None and "." in __name__:
 else:
     from YaplParser import YaplParser
 
-from SymbolTable import SymbolTable, TableOperations
-
-from ConsoleMessages import MessagesDB
-
-from .YaplConstants import constants
-
-# TODO: Realizar la insersión de valores en las funciones exit
 # This class defines a complete listener for a parse tree produced by YaplParser.
 class YaplListener(ParseTreeListener):
 
