@@ -22,7 +22,7 @@ class TableOperations:
         table_item = TableItem(
             lex=constants.SELF,
             token=types.ID,
-            typ=constants.SELF_TYPE,
+            typ=self.symbol_table.tables[self.symbol_table.actual_scope].name,
             line=line,
             sem_kind=constants.ATTR,
             param_method=constants.REF
@@ -64,7 +64,7 @@ class TableOperations:
         table_item = TableItem(
             lex=children[0],
             token=ctx.children[0].symbol.type,
-            typ=children[ind + 1],
+            typ=children[ind + 1] if children[ind + 1] != constants.types.SELF_TYPE else self.symbol_table.tables[self.symbol_table.actual_scope].name,
             line=line,
             sem_kind=sem_kind,
             param_method=constants.REF,

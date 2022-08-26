@@ -13,6 +13,7 @@ sys.path.append('./MyModules')
 from YAPL import YaplLexer, YaplParser, YaplErrorListener, YaplVisitor, YaplSysTypeVisitor
 from ConsoleMessages import MessagesDB
 from SymbolTable import SymbolTable
+from Global import global_constants
 
 app = FastAPI()
 msgs_db = MessagesDB()
@@ -50,9 +51,15 @@ def execute_code(code: Code) -> dict:
     parser.addErrorListener(YaplErrorListener.INSTANCE)    
     tree = parser.program()
     if not msgs_db.error_flag:
+        msgs_db.insert_success('Analizador léxico y sintáctico exitoso.')
         answer = YaplVisitor().visit(tree)
+        if answer == global_constants.CHECK_TYPE:
+            msgs_db.insert_success('La inserción de tipos fue exitosa.')
         if not msgs_db.error_flag:
             answer2 = YaplSysTypeVisitor().visit(tree)
+            if answer2 == global_constants.CHECK_TYPE:
+                msgs_db.insert_success("El análisis de tipos fue exitoso.")
+                
 
     messages = msgs_db.messages
     

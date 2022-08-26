@@ -7,6 +7,8 @@ class GlobalConstants:
     SUCCESS = 'success'
     
     ERROR_TYPE = 'eRROR'
+    NO_TYPE = 'noType'
+    CHECK_TYPE = 'checkType'
     
     ATTR = 'attr'
     METHOD = 'method'

@@ -112,7 +112,7 @@ class SymbolTable(metaclass=MySingleton):
         
         copy_m_i = TableItem(
             lex=constants.object.COPY,
-            typ=constants.types.SELF_TYPE,
+            typ=constants.types.OBJECT,
             token=types.ID,
             line=(0, 0),
             sem_kind=constants.METHOD,
@@ -144,6 +144,10 @@ class SymbolTable(metaclass=MySingleton):
             param_method=constants.VALUE,
         )
         
+        self.push_scope(constants.string.LENGTH)
+        
+        self.pop_scope()
+        
         self.insert(length_m_i)
         
         concat_m_i = TableItem(
@@ -153,9 +157,25 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=constants.METHOD,
             param_method=constants.VALUE,
+            param_num=1
         )
         
         self.insert(concat_m_i)
+        
+        self.push_scope(constants.string.CONCAT)
+        
+        concat_p_i = TableItem(
+            lex = 's',
+            token=types.ID,
+            typ=constants.types.STRING,
+            line=(0, 0),
+            sem_kind=constants.PARAMETER,
+            param_method=constants.VALUE,
+        )
+        
+        self.insert(concat_p_i)
+        
+        self.pop_scope()
         
         substr_m_i = TableItem(
             lex=constants.string.SUBSTR,
@@ -164,9 +184,36 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=constants.METHOD,
             param_method=constants.VALUE,
+            param_num=2
         )
         
         self.insert(substr_m_i)
+        
+        self.push_scope(constants.string.SUBSTR)
+        
+        substr_p_i_1 = TableItem(
+            lex = 'i',
+            token=types.ID,
+            typ=constants.types.INT,
+            line=(0, 0),
+            sem_kind=constants.PARAMETER,
+            param_method=constants.VALUE,
+        )
+        
+        self.insert(substr_p_i_1)
+        
+        substr_p_i_2 = TableItem(
+            lex = 'l',
+            token=types.ID,
+            typ=constants.types.INT,
+            line=(0, 0),
+            sem_kind=constants.PARAMETER,
+            param_method=constants.VALUE,
+        )
+        
+        self.insert(substr_p_i_2)
+        
+        self.pop_scope()
         
         self.pop_scope()
     
@@ -185,24 +232,58 @@ class SymbolTable(metaclass=MySingleton):
         out_string_m_i = TableItem(
             lex=constants.io.OUT_STRING,
             token=types.ID,
-            typ=constants.types.SELF_TYPE,
+            typ=constants.types.IO,
             line=(0, 0),
             sem_kind=constants.METHOD,
             param_method=constants.VALUE,
+            param_num=1
         )
         
         self.insert(out_string_m_i)
         
-        out_int_m_i = TableItem(
-            lex=constants.io.OUT_INT,
+        self.push_scope(constants.io.OUT_STRING)
+        
+        out_string_p_i = TableItem(
+            lex='x',
             token=types.ID,
-            typ=constants.types.SELF_TYPE,
+            typ=constants.types.STRING,
             line=(0, 0),
-            sem_kind=constants.METHOD,
+            sem_kind=constants.PARAMETER,
             param_method=constants.VALUE,
         )
         
+        self.insert(out_string_p_i)
+        
+        self.pop_scope()
+        
+        
+        out_int_m_i = TableItem(
+            lex=constants.io.OUT_INT,
+            token=types.ID,
+            typ=constants.types.IO,
+            line=(0, 0),
+            sem_kind=constants.METHOD,
+            param_method=constants.VALUE,
+            param_num=1
+        )
+        
         self.insert(out_int_m_i)
+        
+        self.push_scope(constants.io.OUT_INT)
+        
+        out_int_p_i = TableItem(
+            lex='x',
+            token=types.ID,
+            typ=constants.types.INT,
+            line=(0, 0),
+            sem_kind=constants.PARAMETER,
+            param_method=constants.VALUE,
+        )
+        
+        self.insert(out_int_p_i)
+        
+        self.pop_scope()
+        
         
         in_string_m_i = TableItem(
             lex=constants.io.IN_STRING,
@@ -215,6 +296,10 @@ class SymbolTable(metaclass=MySingleton):
         
         self.insert(in_string_m_i)
         
+        self.push_scope(constants.io.IN_STRING)
+        
+        self.pop_scope()
+        
         in_int_m_i = TableItem(
             lex=constants.io.IN_INT,
             token=types.ID,
@@ -225,6 +310,10 @@ class SymbolTable(metaclass=MySingleton):
         )
         
         self.insert(in_int_m_i)
+        
+        self.push_scope(constants.io.IN_INT)
+        
+        self.pop_scope()
         
         self.pop_scope()
         
@@ -276,6 +365,20 @@ class SymbolTable(metaclass=MySingleton):
             for row in self.tables[scope].items:
                 if row.lex == name:
                     return True
+                
+        return False
+    
+    def get_from_table(self, index: int, name: str):
+        for row in self.tables[index].items:
+            if row.lex == name:
+                return row
+                
+        return None
+    
+    def exists_in_table(self, index: int, name):
+        for row in self.tables[index].items:
+            if row.lex == name:
+                return True
                 
         return False
 

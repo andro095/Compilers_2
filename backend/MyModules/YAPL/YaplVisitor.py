@@ -11,6 +11,8 @@ from ConsoleMessages import MessagesDB
 
 from .YaplConstants import constants
 
+from Global import global_constants
+
 # This class defines a complete generic visitor for a parse tree produced by YaplParser.
 
 class YaplVisitor(ParseTreeVisitor):
@@ -35,6 +37,7 @@ class YaplVisitor(ParseTreeVisitor):
         self.insert_log('Saliendo del programa.')
         self.symbol_table.check_main()
         print('Tablas de símbolos:\n %s.' % str(self.symbol_table))
+        return global_constants.CHECK_TYPE
 
 
     # Visit a parse tree produced by YaplParser#class.

@@ -4,6 +4,7 @@ class Constants:
     COMPLEX_RULES = './TypesSystem/Rules/complex_rules.json'
     EXPR = 'expr'
     LET = 'let'
+    IN = 'in'
 
 class TypesConstants:
     CLASS = 1
@@ -62,7 +63,7 @@ class BasicTypes:
     
 basic_types = BasicTypes()
 
-types = TypesConstants()
+typs = TypesConstants()
     
 
 types_sys_constants = Constants()

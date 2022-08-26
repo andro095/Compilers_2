@@ -22,8 +22,7 @@ class MessagesDB(metaclass=MySingleton):
         msg = f'Advertencia en la línea {line[0]}:{line[1]}\n{msg}'
         self.__messages.append(make_message(msg, type=global_constants.WARNING))
         
-    def insert_success(self):
-        msg = 'Código ejecutado correctamente'
+    def insert_success(self, msg: str) -> None:
         self.__messages.append(make_message(msg, type=global_constants.SUCCESS))
     
     @property    
