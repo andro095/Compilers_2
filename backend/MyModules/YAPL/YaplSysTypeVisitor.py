@@ -46,7 +46,7 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
     
     # Visit a parse tree produced by YaplParser#program.
     def visitProgram(self, ctx:YaplParser.ProgramContext):
-        print(self.symbol_table.actual_scope)
+        # print(self.symbol_table.actual_scope)
         
         res = evaluate_terminal_children(ctx.children)
         

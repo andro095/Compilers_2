@@ -274,8 +274,6 @@ class TypeSystem:
         return types[-1]
                 
     def id_lround(self, ctx: YaplParser.ExprContext, types: list[str]) -> str:
-        
-        print(ctx.getText(), types, ctx.children[2].getText())
         if any(map(lambda x: x == global_constants.ERROR_TYPE, types)):
             return global_constants.ERROR_TYPE
         

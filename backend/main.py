@@ -1,11 +1,15 @@
     # Librerias de Python
+import imp
 import sys
 import os
+from tkinter.tix import Tree
 
 # Librerias de terceros
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
+from antlr4.tree.Trees import Trees
 from fastapi import FastAPI
 from pydantic import BaseModel
+import svgling
 
 sys.path.append('./MyModules')
 
@@ -50,7 +54,7 @@ def execute_code(code: Code) -> dict:
     parser.removeErrorListeners()
     parser.addErrorListener(YaplErrorListener.INSTANCE)    
     tree = parser.program()
-    if not msgs_db.error_flag:
+    if not msgs_db.error_flag:       
         msgs_db.insert_success('Analizador léxico y sintáctico exitoso.')
         answer = YaplVisitor().visit(tree)
         if answer == global_constants.CHECK_TYPE:
