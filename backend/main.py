@@ -62,7 +62,7 @@ def execute_code(code: Code) -> dict:
         if not msgs_db.error_flag:
             answer2 = YaplSysTypeVisitor().visit(tree)
             if answer2 == global_constants.CHECK_TYPE:
-                msgs_db.insert_success("El análisis de tipos fue exitoso.")
+                msgs_db.insert_success("El análisis semantico fue exitoso.")
                 
 
     messages = msgs_db.messages
