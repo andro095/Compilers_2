@@ -13,8 +13,9 @@ class YaplErrorListener(ErrorListener):
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         msg = msg.replace('mismatched input ', 'Entrada no válida ')
+        msg = msg.replace('extraneous input ', 'Entrada no esperada ')
         msg = msg.replace(' expecting ', ', se esperaba uno de los siguientes valores: ')
-        message = msg
+        message = msg + '.'
         self.msgs_db.insert_error((line, column), message)
 
 YaplErrorListener.INSTANCE = YaplErrorListener()

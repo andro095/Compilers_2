@@ -63,18 +63,18 @@ class TypeSystem:
                         return elem.typ
                     else:
                         line = (ctx.start.line, ctx.start.column)
-                        self.msgs_db.insert_errror(line, f'No se puede acceder a {ctx.children[1].getText()} de una variable')
+                        self.msgs_db.insert_errror(line, f'No se puede acceder a {ctx.children[1].getText()} de una variable.')
                         return global_constants.ERROR_TYPE
                 elif elem.sem_kind == global_constants.METHOD:
                     if ctx.getChildCount() > 1 and ctx.children[1].symbol.type == typs.LROUND:
                         return elem.typ
                     else: 
                         line = (ctx.start.line, ctx.start.column)
-                        self.msgs_db.insert_error(line, f'No se puede acceder a {ctx.children[1].getText()} de un método')
+                        self.msgs_db.insert_error(line, f'No se puede acceder a {ctx.children[1].getText()} de un método.')
                         return global_constants.ERROR_TYPE
             else:
                 line = (ctx.start.line, ctx.start.column)
-                self.msgs_db.insert_error(line, f'{ctx.children[0].getText()} no existe')
+                self.msgs_db.insert_error(line, f'{ctx.children[0].getText()} no existe.')
                 return global_constants.ERROR_TYPE
         elif ctx.children[0].symbol.type == typs.INTEGER:
             return basic_types.INT
@@ -98,20 +98,20 @@ class TypeSystem:
             feature_item = self.sym_table.get(ctx.children[0].getText())
             if feature_item.sem_kind == global_constants.ATTR:
                 if not self.sym_table.exists(ctx.children[2].getText()):
-                    self.msgs_db.insert_error(line, f'Tipo {ctx.children[2].getText()} no existente')
+                    self.msgs_db.insert_error(line, f'El tipo {ctx.children[2].getText()} no existe.')
                     return global_constants.ERROR_TYPE
                 
                 if ctx.getChildCount() == 3:
                     return global_constants.CHECK_TYPE
                 
                 if types[4] != feature_item.typ and types[4] != basic_types.SELF_TYPE:
-                    self.msgs_db.insert_error(line, f'Tipo {types[4]} no es compatible con {feature_item.typ}')
+                    self.msgs_db.insert_error(line, f'El tipo de la variable {ctx.children[4].getText()}: {types[4]}, no es del mismo tipo que {feature_item.lex}: {feature_item.typ}.')
                     return global_constants.ERROR_TYPE
                 else:
                     return global_constants.CHECK_TYPE
             elif feature_item.sem_kind == global_constants.METHOD:
                 if ctx.children[-4].getText() != basic_types.SELF_TYPE and not self.sym_table.exists(ctx.children[-4].getText()):
-                    self.msgs_db.insert_error(line, f'Tipo {ctx.children[-4].getText()} no existente')
+                    self.msgs_db.insert_error(line, f'El tipo del metodo {ctx.children[0].getText()}: {ctx.children[-4].getText()} no está declarado.')
                     return global_constants.ERROR_TYPE
                 
                 if types[-2] == None:
@@ -119,12 +119,12 @@ class TypeSystem:
                     return global_constants.ERROR_TYPE
                 
                 if types[-2] != feature_item.typ and types[-2] != global_constants.NO_TYPE:
-                    self.msgs_db.insert_error(line, f'Tipo {types[-2]} no es compatible con {feature_item.typ}')
+                    self.msgs_db.insert_error(line, f'Tipo de retorno de la expresión: {types[-2]} no es compatible con el tipo del retorno de la función {feature_item.lex}: {feature_item.typ}.')
                     return global_constants.ERROR_TYPE
                 else:
                     return global_constants.CHECK_TYPE
         else:
-            self.msgs_db.insert_error(line, f'{ctx.children[0].getText()} no existe')
+            self.msgs_db.insert_error(line, f'La característica {ctx.children[0].getText()} no existe.')
             return global_constants.ERROR_TYPE
         
     def validate_expr(self, ctx: YaplParser.ExprContext, types: list[str] ,res: list[bool]) -> str:
@@ -135,19 +135,14 @@ class TypeSystem:
             return global_constants.CHECK_TYPE
         else:
             line = (ctx.start.line, ctx.start.column)
-            self.msgs_db.insert_error(line, f'Paraetro {ctx.children[0].getText()} y/o tipo {ctx.children[2].getText()} no delcarado')
+            self.msgs_db.insert_error(line, f'Parametro {ctx.children[0].getText()} y/o tipo {ctx.children[2].getText()} no está declarado.')
             return global_constants.ERROR_TYPE
         
     def lround_expr(self, ctx: YaplParser.ExprContext, types: list[str]) -> str:
         return types[1]
     
     def is_void(self, ctx: YaplParser.ExprContext, types: list[str]) -> str:
-        if types[1] != global_constants.ERROR_TYPE:
-            return basic_types.BOOL
-        else:
-            line = (ctx.start.line, ctx.start.column)
-            self.msgs_db.insert_error(line, f'{ctx.children[1].getText()} no es compatible con {types[1]}')
-            return global_constants.ERROR_TYPE
+        return basic_types.BOOL if types[1] != global_constants.ERROR_TYPE else global_constants.ERROR_TYPE
     
     def compare(self, ctx: YaplParser.ExprContext, types: list[str]) -> str:        
         if types[0] == global_constants.ERROR_TYPE or types[2] == global_constants.ERROR_TYPE:
@@ -165,10 +160,10 @@ class TypeSystem:
                 if father0 == father2 or types[0] == father2 or types[2] == father0:
                     return basic_types.BOOL
                 else:
-                    self.msgs_db.insert_error(line, f'{types[0]} no es compatible con {types[2]}')
+                    self.msgs_db.insert_error(line, f'El tipo de la parte izquierda: {types[0]} no es compatible con la de la parte derecha: {types[2]}.')
                     return global_constants.ERROR_TYPE
         else: 
-            self.msgs_db.insert_error(line, f'{types[0]} o {types[2]} no existe')
+            self.msgs_db.insert_error(line, f'El tipo {types[0]} y/o {types[2]} no existe(n).')
             return global_constants.ERROR_TYPE
             
     def not_expr(self, ctx: YaplParser.ExprContext, types: list[str]) -> str:
@@ -176,7 +171,7 @@ class TypeSystem:
             return basic_types.BOOL
         else:
             line = (ctx.start.line, ctx.start.column)
-            self.msgs_db.insert_error(line, f'{types[1]} no es compatible con {basic_types.BOOL}')
+            self.msgs_db.insert_error(line, f'El tipo de retorno de la expresión no es de tipo {basic_types.BOOL}.')
             return global_constants.ERROR_TYPE
     
     def arimetic(self, ctx: YaplParser.ExprContext, types: list[str]) -> str:
@@ -184,7 +179,7 @@ class TypeSystem:
             return basic_types.INT
         else:
             line = (ctx.start.line, ctx.start.column)
-            self.msgs_db.insert_error(line, f'{types[0]} o {types[2]} no son enteros')
+            self.msgs_db.insert_error(line, f'El tipo de la expresión izquierda: {types[0]} y/o de la expresión derecha: {types[2]} no es(son) entero(s).')
             return global_constants.ERROR_TYPE
     
     def not_int(self, ctx: YaplParser.ExprContext, types: list[str]) -> str:
@@ -192,7 +187,7 @@ class TypeSystem:
             return basic_types.INT
         else:
             line = (ctx.start.line, ctx.start.column)
-            self.msgs_db.insert_error(line, f'{types[1]} no es compatible con {basic_types.INT}')
+            self.msgs_db.insert_error(line, f'El tipo de la expresión: {types[1]} no es de tipo {basic_types.INT}.')
             return global_constants.ERROR_TYPE
             
     
@@ -213,10 +208,10 @@ class TypeSystem:
                 if id_item.typ == father2:
                     return types[2]
                 else:           
-                    self.msgs_db.insert_error(line, f'{id_item.typ} no es compatible con {types[2]}')
+                    self.msgs_db.insert_error(line, f'El tipo de la expresión: {types[2]} no se le puede asignar a la variable {id_item.lex} de tipo {id_item.typ}.')
                     return global_constants.ERROR_TYPE
         else:
-            self.msgs_db.insert_error(line, f'{ctx.children[0].getText()} o {types[2]} no existe')
+            self.msgs_db.insert_error(line, f'La variable {ctx.children[0].getText()} y/o el tipo de la expresión: {types[2]} no existe(n).')
             return global_constants.ERROR_TYPE
         
     def block(self, ctx: YaplParser.ExprContext, types: list[str]) -> str:
@@ -232,13 +227,13 @@ class TypeSystem:
         line = (ctx.start.line, ctx.start.column)
         
         if self.cast_bool(types[1]) != basic_types.BOOL:
-            self.msgs_db.insert_error(line, f'{types[1]} no es compatible con {basic_types.BOOL}')
+            self.msgs_db.insert_error(line, f'El tipo de la condicional {types[1]} no es de tipo {basic_types.BOOL}.')
             return global_constants.ERROR_TYPE
         
         if self.cast_bool(types[3]) != global_constants.ERROR_TYPE:
             return basic_types.OBJECT
         else:
-            self.msgs_db.insert_error(line, 'Ocurre un error en el bloque')
+            self.msgs_db.insert_error(line, 'Ocurre un error en la expresión de retorno.')
             return global_constants.ERROR_TYPE
             
     def if_expr(self, ctx: YaplParser.ExprContext, types: list[str]) -> str:
@@ -260,13 +255,13 @@ class TypeSystem:
         while ctx.children[i].getText().lower() != types_sys_constants.IN:
             if isinstance(ctx.children[i], YaplParser.ExprContext):
                 if types[i] != actual_type:
-                    self.msgs_db.insert_error(line, f'{types[i]} no es compatible con {actual_type}')
+                    self.msgs_db.insert_error(line, f'El tipo de la expresión: {types[i]} no es del tipo esperado: {actual_type}.')
                     return global_constants.ERROR_TYPE
             elif ctx.children[i].symbol.type == typs.ID:
                 if self.sym_table.exists(ctx.children[i].getText()) and self.sym_table.exists(ctx.children[i + 2].getText()):
                     actual_type = self.sym_table.get(ctx.children[i].getText()).typ
                 else:
-                    self.msgs_db.insert_error(line, f'{ctx.children[i].getText()} y/o {ctx.children[i + 2].getText()} no existe(n)')
+                    self.msgs_db.insert_error(line, f'{ctx.children[i].getText()} y/o {ctx.children[i + 2].getText()} no existe(n).')
                     return global_constants.ERROR_TYPE
                 
             i += 1
@@ -294,7 +289,7 @@ class TypeSystem:
                 param_count = comma_count + 1
             
             if param_count != elem.param_num:
-                self.msgs_db.insert_error(line, f'El numero de parametros no coincide con el numero de parametros del método')
+                self.msgs_db.insert_error(line, f'El número de parametros no coincide con el numero de parametros del método {elem.lex}.')
                 return global_constants.ERROR_TYPE
             
             table = self.sym_table.tables[self.sym_table.get_table_index(elem.lex)]
@@ -303,14 +298,14 @@ class TypeSystem:
             
             for i in range(elem.param_num):
                 if table.items[i].typ != types[indx]:
-                    self.msgs_db.insert_error(line, f'{table.items[i].typ} no es compatible con {types[indx]}')
+                    self.msgs_db.insert_error(line, f'El tipo de la expresión: {types[indx]} no es del tipo esperado para el parámetro {table.items[i].lex}: {table.items[i].typ}.')
                     return global_constants.ERROR_TYPE
                 else:
                     indx += 2
             
             return elem.typ
         else:
-            self.msgs_db.insert_error(line, f'{ctx.children[0].getText()} no existe')
+            self.msgs_db.insert_error(line, f'El método {ctx.children[0].getText()} no existe.')
             return global_constants.ERROR_TYPE
         
     def expr_point(self, ctx: YaplParser.ExprContext, types: list[str]) -> str:
@@ -339,7 +334,7 @@ class TypeSystem:
                     
                 
                 if param_count != elem.param_num:
-                    self.msgs_db.insert_error(line, f'El numero de parametros no coincide con el numero de parametros del método')
+                    self.msgs_db.insert_error(line, f'El número de parametros no coincide con el numero de parametros del método {elem.lex}.')
                     return global_constants.ERROR_TYPE
                 
                 table = self.sym_table.tables[self.sym_table.get_table_index(elem.lex)]
@@ -348,17 +343,17 @@ class TypeSystem:
                 
                 for i in range(elem.param_num):
                     if table.items[i].typ != types[indx]:
-                        self.msgs_db.insert_error(line, f'{table.items[i].typ} no es compatible con {types[indx]}')
+                        self.msgs_db.insert_error(line, f'El tipo de la expresión: {types[indx]} no es del tipo esperado para el parámetro {table.items[i].lex}: {table.items[i].typ}.')
                         return global_constants.ERROR_TYPE
                     else:
                         indx += 2
                 
                 return elem.typ
             else:
-                self.msgs_db.insert_error(line, f'{ctx.children[2].getText()} no existe')
+                self.msgs_db.insert_error(line, f'El método {ctx.children[2].getText()} no existe.')
                 return global_constants.ERROR_TYPE
         else:
-            self.msgs_db.insert_error(line, f'{types[0]} no existe')
+            self.msgs_db.insert_error(line, f'El tipo de la expresión {types[0]} no existe.')
             return global_constants.ERROR_TYPE
         
     def expr_arroba(self, ctx: YaplParser.ExprContext, types: list[str]) -> str:
@@ -386,7 +381,7 @@ class TypeSystem:
                     param_count = comma_count + 1
                 
                 if param_count != elem.param_num:
-                    self.msgs_db.insert_error(line, f'El numero de parametros no coincide con el numero de parametros del método')
+                    self.msgs_db.insert_error(line, f'El número de parametros no coincide con el numero de parametros del método {elem.lex}.')
                     return global_constants.ERROR_TYPE
                 
                 table = self.sym_table.tables[self.sym_table.get_table_index(elem.lex)]
@@ -395,17 +390,17 @@ class TypeSystem:
                 
                 for i in range(elem.param_num):
                     if table.items[i].typ != types[indx]:
-                        self.msgs_db.insert_error(line, f'{table.items[i].typ} no es compatible con {types[indx]}')
+                        self.msgs_db.insert_error(line, f'El tipo de la expresión: {types[indx]} no es del tipo esperado para el parámetro {table.items[i].lex}: {table.items[i].typ}.')
                         return global_constants.ERROR_TYPE
                     else:
                         indx += 2
                 
                 return elem.typ
             else:
-                self.msgs_db.insert_error(line, f'{ctx.children[4].getText()} no existe')
+                self.msgs_db.insert_error(line, f'El método {ctx.children[4].getText()} no existe.')
                 return global_constants.ERROR_TYPE
         else: 
-            self.msgs_db.insert_error(line, f'{types[0]} o {ctx.children[2].getText()} no existe')
+            self.msgs_db.insert_error(line, f'El tipo de la expresión {types[0]} o {ctx.children[2].getText()} no existe.')
             return global_constants.ERROR_TYPE
             
         

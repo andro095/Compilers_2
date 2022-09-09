@@ -55,14 +55,14 @@ def execute_code(code: Code) -> dict:
     parser.addErrorListener(YaplErrorListener.INSTANCE)    
     tree = parser.program()
     if not msgs_db.error_flag:       
-        msgs_db.insert_success('Analizador léxico y sintáctico exitoso.')
-        answer = YaplVisitor().visit(tree)
-        if answer == global_constants.CHECK_TYPE:
-            msgs_db.insert_success('La inserción de tipos fue exitosa.')
-        if not msgs_db.error_flag:
-            answer2 = YaplSysTypeVisitor().visit(tree)
-            if answer2 == global_constants.CHECK_TYPE:
-                msgs_db.insert_success("El análisis semantico fue exitoso.")
+        msgs_db.insert_success('El análisis léxico y sintáctico fue exitoso.')
+    del msgs_db.error_flag
+    YaplVisitor().visit(tree)
+    if not msgs_db.error_flag:
+        msgs_db.insert_success('La inserción de tipos fue exitosa.')
+    answer2 = YaplSysTypeVisitor().visit(tree)
+    if answer2 == global_constants.CHECK_TYPE:
+        msgs_db.insert_success("El análisis semantico fue exitoso.")
                 
 
     messages = msgs_db.messages

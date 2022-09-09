@@ -37,34 +37,22 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
             else:
                 res_types.append(None)
         return res_types
-        
-    def insert_log(self, message: str, color: str = None):
-        if color:
-            self.msg_db.insert_message(message, color)
-        else:
-            self.msg_db.insert_message(message)
     
     # Visit a parse tree produced by YaplParser#program.
     def visitProgram(self, ctx:YaplParser.ProgramContext):
-        # print(self.symbol_table.actual_scope)
         
         res = evaluate_terminal_children(ctx.children)
         
         typs = self.visit_children(ctx, res)
-        # self.msg_db.insert_message("Programa: " + str(typs))
         
         if some_error_type(typs):
-                line = (ctx.start.line, ctx.start.column)
-                self.msg_db.insert_error(line, f'No se puede iniciar el programa porque hay errores aqui:\n\t\t{ctx.getText()}')
-                return global_constants.ERROR_TYPE
+            return global_constants.ERROR_TYPE
             
         return global_constants.CHECK_TYPE
         
     
     # Visit a parse tree produced by YaplParser#class.
-    def visitClass(self, ctx:YaplParser.ClassContext): 
-        if self.msg_db.error_flag:
-            return global_constants.ERROR_TYPE
+    def visitClass(self, ctx:YaplParser.ClassContext):
         
         res = evaluate_terminal_children(ctx.children)  
         
@@ -73,26 +61,19 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
         if class_exists:
             self.symbol_table.enter_scope(ctx.children[1].getText())
             typs = self.visit_children(ctx, res)
-            # self.msg_db.insert_message(f"Clase {ctx.children[1].getText()}: " + str(typs))
             
             if some_error_type(typs):
-                line = (ctx.start.line, ctx.start.column)
-                self.msg_db.insert_error(line, f'No se puede iniciar el programa porque hay errores aqui:\n\t\t{ctx.getText()}')
                 return global_constants.ERROR_TYPE
             
             self.symbol_table.exit_scope()
             
             return global_constants.CHECK_TYPE
         else:
-            line = (ctx.start.line, ctx.start.column)
-            self.msg_db.insert_error(line, f'La clase {ctx.children[1].getText()} no existe.')
             return global_constants.ERROR_TYPE
         
     
     # Visit a parse tree produced by YaplParser#feature.
     def visitFeature(self, ctx:YaplParser.FeatureContext):
-        if self.msg_db.error_flag:
-            return global_constants.ERROR_TYPE
 
         res = evaluate_terminal_children(ctx.children)
         
@@ -107,11 +88,8 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
                 self.symbol_table.enter_scope(ctx.children[0].getText())
                 
             typs = self.visit_children(ctx, res)
-            # self.msg_db.insert_message(f"Feature {ctx.children[0].getText()}: " + str(typs))
             
             if some_error_type(typs):
-                line = (ctx.start.line, ctx.start.column)
-                self.msg_db.insert_error(line, f'No se puede iniciar el programa porque hay errores aqui:\n\t\t{ctx.getText()}')
                 return global_constants.ERROR_TYPE
             
             validation = types_sys.validate_feature(ctx, typs)
@@ -121,26 +99,16 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
                 
             return validation
         else:
-            line = (ctx.start.line, ctx.start.column)
-            self.msg_db.insert_error(line, f'El atributo {ctx.children[0].getText()} no existe.')
             return global_constants.ERROR_TYPE
         
 
     # Visit a parse tree produced by YaplParser#formal.
     def visitFormal(self, ctx:YaplParser.FormalContext):
-        if self.msg_db.error_flag:
-            return global_constants.ERROR_TYPE
-        
-        # res = evaluate_terminal_children(ctx.children)     
-        
-        # self.msg_db.insert_message(f"Formal {ctx.children[0].getText()}: " + str(res))
         
         return types_sys.validate_formal(ctx)
     
     # Visit a parse tree produced by YaplParser#expr.
-    def visitExpr(self, ctx:YaplParser.ExprContext):  
-        if self.msg_db.error_flag:
-            return global_constants.ERROR_TYPE
+    def visitExpr(self, ctx:YaplParser.ExprContext):
         
         res = evaluate_terminal_children(ctx.children) 
                 
@@ -148,7 +116,6 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
         
         if all(res):
             typs = self.get_type(ctx)
-            # self.msg_db.insert_message(f"Expr {ctx.getText()}: " + str(typs))
             return typs
         else:
             if ctx.children[0].getText().lower() == constants.LET:
@@ -161,11 +128,8 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
                     return global_constants.ERROR_TYPE
                 
             typs = self.visit_children(ctx, res)
-            # self.msg_db.insert_message(f"Expr {ctx.getText()}: " + str(typs))
             
             if some_error_type(typs):
-                line = (ctx.start.line, ctx.start.column)
-                self.msg_db.insert_error(line, f'No se puede iniciar el programa porque hay errores aqui:\n\t\t{ctx.getText()}')
                 return global_constants.ERROR_TYPE
         
             validation = types_sys.validate_expr(ctx, typs, res)

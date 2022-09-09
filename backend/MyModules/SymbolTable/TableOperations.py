@@ -5,7 +5,6 @@ from utils import indx
 from antlr4 import ParserRuleContext
 from ConsoleMessages import MessagesDB
 
-# TODO: Agregar el tipo de retorno de la funciones
 class TableOperations:
     def __init__(self) -> None:
         self.symbol_table = SymbolTable()
@@ -36,8 +35,12 @@ class TableOperations:
             ind = indx(children, constants.INHERITS[1])
             
         if ind != -1 and children[ind + 1] in constants.BASIC_TYPES:
-                self.msgs_db.insert_error(line, f'La clase {children[1]} no puede heredar de {children[ind + 1]}')
-                return False
+            self.msgs_db.insert_error(line, f'La clase {children[1]} no puede heredar de {children[ind + 1]}.')
+            return False
+            
+        if ind != -1 and children[ind + 1] == children[1]:
+            self.msgs_db.insert_error(line, f'La clase {children[1]} no puede heredar de si misma.')
+            return False
            
         table_item = TableItem(
             lex=children[1],
@@ -91,8 +94,6 @@ class TableOperations:
         
     def insert_expr(self, ctx: YaplParser.ExprContext) -> bool:
         children, line = self.get_ctx_attr(ctx)
-        
-        # print(children)
         
         if children[0].lower() == constants.LET:
             param_num = len(list(filter(lambda x: x == constants.TYPE_DELIMITER, children[2:-1])))

@@ -405,3 +405,5 @@ class SymbolTable(metaclass=MySingleton):
             mystr+= f'\n\n{table.name}:\n{tab}'
             
         return mystr
+    
+    
