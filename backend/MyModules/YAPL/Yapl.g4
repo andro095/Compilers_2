@@ -35,6 +35,8 @@ FALSE: 'false';
 
 TRUE: 'true';
 
+VOID: 'void';
+
 
 
 // Simbolos
@@ -93,7 +95,7 @@ COMMENT: '(*' .*? '*)' -> skip;
 
 INTEGER: DIGIT+;
 
-STRING: '"' ~["]*? '"';
+STRING: '"' ( '\\' [btf"'\\] | ~[\r\n\\"] )* '"';
 
 TYPE: (MAYUS (LETTER_NUM | '_')*) | SELF_TYPE;
 ID: (MINUS (LETTER_NUM | '_')*) | SELF;
@@ -115,7 +117,7 @@ fragment MINUS: ('a'..'z');
 
 fragment DIGIT: [0-9];
 
-WS : [ \t\r\n\f]+ -> skip ;
+WS : [ \t\r\n\f\b]+ -> skip ;
 
 // Reglas del Parser
 
@@ -152,3 +154,5 @@ expr: ID ASIGN expr |
       STRING |
       TRUE |
       FALSE;
+
+ERR_TOKEN : . ;

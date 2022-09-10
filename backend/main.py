@@ -5,7 +5,7 @@ import os
 from tkinter.tix import Tree
 
 # Librerias de terceros
-from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
+from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, Token
 from antlr4.tree.Trees import Trees
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -48,6 +48,20 @@ def execute_code(code: Code) -> dict:
     i_stream = InputStream(code.code)
     
     lexer = YaplLexer(i_stream)
+    haslexer_errors = False
+    
+    actual_token = lexer.nextToken()
+    while actual_token.type != Token.EOF:
+        if actual_token.type == lexer.ERR_TOKEN:
+            line = (actual_token.line, actual_token.column)
+            msgs_db.insert_error(line, f'Caracter no reconocido: {actual_token.text}', 'léxico')
+            haslexer_errors = True
+        actual_token = lexer.nextToken()
+            
+    if not haslexer_errors:
+        msgs_db.insert_success('El análisis léxico fue exitoso.')
+    
+    lexer.reset()
     
     stream = CommonTokenStream(lexer)
     parser = YaplParser(stream)
@@ -55,12 +69,13 @@ def execute_code(code: Code) -> dict:
     parser.addErrorListener(YaplErrorListener.INSTANCE)    
     tree = parser.program()
     if not msgs_db.error_flag:       
-        msgs_db.insert_success('El análisis léxico y sintáctico fue exitoso.')
+        msgs_db.insert_success('El  sintáctico fue exitoso.')
     del msgs_db.error_flag
     YaplVisitor().visit(tree)
     if not msgs_db.error_flag:
         msgs_db.insert_success('La inserción de tipos fue exitosa.')
     answer2 = YaplSysTypeVisitor().visit(tree)
+    print(answer2)
     if answer2 == global_constants.CHECK_TYPE:
         msgs_db.insert_success("El análisis semantico fue exitoso.")
                 

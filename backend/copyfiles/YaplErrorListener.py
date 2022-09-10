@@ -16,6 +16,6 @@ class YaplErrorListener(ErrorListener):
         msg = msg.replace('extraneous input ', 'Entrada no esperada ')
         msg = msg.replace(' expecting ', ', se esperaba uno de los siguientes valores: ')
         message = msg + '.'
-        self.msgs_db.insert_error((line, column), message, 'sintáctico')
+        self.msgs_db.insert_error((line, column), message)
 
 YaplErrorListener.INSTANCE = YaplErrorListener()

@@ -13,9 +13,9 @@ class MessagesDB(metaclass=MySingleton):
     def insert_message(self, msg: str, color: str | None = None, type: str | None = None) -> None:
         self.__messages.append(make_message(msg, color, type))
         
-    def insert_error(self, line: tuple, msg: str) -> None:
+    def insert_error(self, line: tuple, msg: str, type='semántico') -> None:
         self.activate_error_flag()
-        msg = f'Error en la línea {line[0]}:{line[1]}\n\t{msg}'
+        msg = f'Error de tipo {type} en la línea {line[0]}:{line[1]}\n\t{msg}'
         self.__messages.append(make_message(msg, type=global_constants.ERROR))
     
     def insert_warning(self, line: tuple, msg: str) -> None:

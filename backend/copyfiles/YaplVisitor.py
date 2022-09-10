@@ -1,4 +1,4 @@
-# Generated from /Users/andrerodriguez/Documents/Github/University/Compilers_2/backend/MyModules/YAPL/Yapl.g4 by ANTLR 4.10.1
+# Generated from /Users/andrerodriguez/Documents/Github/University/Compilers_2/Grammars/Inputs/YAPL/Yapl.g4 by ANTLR 4.10.1
 from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .YaplParser import YaplParser
@@ -40,7 +40,6 @@ class YaplVisitor(ParseTreeVisitor):
             self.visitChildren(ctx)
             self.symbol_table.pop_scope()
 
-
     # Visit a parse tree produced by YaplParser#feature.
     def visitFeature(self, ctx:YaplParser.FeatureContext):
         inserted = self.table_operations.insert_feature(ctx)
@@ -61,6 +60,7 @@ class YaplVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by YaplParser#expr.
     def visitExpr(self, ctx:YaplParser.ExprContext):
+ 
         if not ctx.children:
             return
         if ctx.children[0].getText().lower() == constants.LET:

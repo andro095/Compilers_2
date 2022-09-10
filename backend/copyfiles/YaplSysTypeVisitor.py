@@ -40,9 +40,13 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
     
     # Visit a parse tree produced by YaplParser#program.
     def visitProgram(self, ctx:YaplParser.ProgramContext):
+        print ('Program')
         res = evaluate_terminal_children(ctx.children)
         
         typs = self.visit_children(ctx, res)
+        self.msg_db.insert_message('Programa. Tipos de retorno: ' + str(typs))
+        
+        print('paso')
         
         if some_error_type(typs):
             return global_constants.ERROR_TYPE
@@ -61,6 +65,7 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
             self.symbol_table.enter_scope(ctx.children[1].getText())
             typs = self.visit_children(ctx, res)
             
+            self.msg_db.insert_message(f'Clase: {ctx.children[1].getText()}. Tipos de retorno: ' + str(typs))
             
             if some_error_type(typs):
                 return global_constants.ERROR_TYPE
@@ -89,6 +94,7 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
                 
             typs = self.visit_children(ctx, res)
             
+            self.msg_db.insert_message(f'Feature: {ctx.children[0].getText()}. Tipos de retorno: ' + str(typs))
             
             if some_error_type(typs):
                 return global_constants.ERROR_TYPE
@@ -117,6 +123,7 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
         
         if all(res):
             typs = self.get_type(ctx)
+            self.msg_db.insert_message(f'Expr: {ctx.getText()}. Tipos de retorno: ' + str(typs))
             return typs
         else:
             if ctx.children[0].getText().lower() == constants.LET:
@@ -129,6 +136,7 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
                     return global_constants.ERROR_TYPE
                 
             typs = self.visit_children(ctx, res)
+            self.msg_db.insert_message(f'Expr: {ctx.getText()}. Tipos de retorno: ' + str(typs))
             
             if some_error_type(typs):
                 return global_constants.ERROR_TYPE
