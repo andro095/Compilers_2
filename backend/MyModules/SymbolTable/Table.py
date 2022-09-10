@@ -1,9 +1,11 @@
+import imp
 from utils.Utils import indx
-from .Constants import constants, types
+from .Constants import constants
 from tabulate import tabulate
 from ConsoleMessages import MessagesDB
 from pydantic import BaseModel
 from Singleton import MySingleton
+from Global import global_constants
 
 class TableItem(BaseModel):
     lex: str
@@ -23,7 +25,7 @@ class Table(BaseModel):
         
 class SymbolTable(metaclass=MySingleton):
     def __init__(self):
-        self.tables = [Table(name=constants.GLOBAL)]
+        self.tables = [Table(name=constants.string_literals.GLOBAL)]
         self.scopes = [0]
         self.msgs_db = MessagesDB()
         self.lets_counter = 0
@@ -33,15 +35,15 @@ class SymbolTable(metaclass=MySingleton):
     
     def check_main(self) -> None:
         if self.check_main_existence():
-            main_indx = indx(list(map(lambda x: x.lex, self.tables[0].items)), constants.MAIN)
+            main_indx = indx(list(map(lambda x: x.lex, self.tables[0].items)), constants.string_literals.MAIN)
             main_line = self.tables[0].items[main_indx].line
             self.check_main_method(main_line)
         else:
             self.msgs_db.insert_error((0, 0), "No existe la clase main o está heredando de otra clase")
          
     def check_main_method(self, line: tuple[int, int]) -> None:
-        main_table_indx = self.get_table_index(constants.MAIN)
-        main_m_indx = indx(list(map(lambda x: x.lex.lower(), self.tables[main_table_indx].items)), constants.MAIN.lower())
+        main_table_indx = self.get_table_index(constants.string_literals.MAIN)
+        main_m_indx = indx(list(map(lambda x: x.lex.lower(), self.tables[main_table_indx].items)), constants.string_literals.MAIN.lower())
         
         if main_m_indx < 0:
             self.msgs_db.insert_error(line, "El método main no ha sido declarado")
@@ -54,69 +56,69 @@ class SymbolTable(metaclass=MySingleton):
             
     
     def check_main_existence(self) -> bool:
-        return any(map(lambda x: x.lex == constants.MAIN and x.inherits is None, self.tables[0].items))
+        return any(map(lambda x: x.lex == constants.string_literals.MAIN and x.inherits is None, self.tables[0].items))
     
     
     def add_int(self):
         int_item = TableItem(
-            lex=constants.types.INT,
-            token=types.TYPE,
+            lex=global_constants.basic_types.INT,
+            token=global_constants.token_types.TYPE,
             line=(0, 0),
-            sem_kind=constants.CLASS,
+            sem_kind=global_constants.sem_kinds.CLASS,
         )
         self.insert(int_item)
         
     def add_bool(self):
         bool_item = TableItem(
-            lex=constants.types.BOOL,
-            token=types.TYPE,
+            lex=global_constants.basic_types.BOOL,
+            token=global_constants.token_types.TYPE,
             line=(0, 0),
-            sem_kind=constants.CLASS,
-            param_method=constants.VALUE
+            sem_kind=global_constants.sem_kinds.CLASS,
+            param_method=constants.param_methods.VALUE
         )
         self.insert(bool_item)
         
     def add_object(self):
         object_i = TableItem(
-            lex=constants.types.OBJECT,
-            token=types.TYPE,
+            lex=global_constants.basic_types.OBJECT,
+            token=global_constants.token_types.TYPE,
             line=(0, 0),
-            sem_kind=constants.CLASS,
-            param_method=constants.VALUE
+            sem_kind=global_constants.sem_kinds.CLASS,
+            param_method=constants.param_methods.VALUE
         )
         self.insert(object_i)
         
-        self.push_scope(constants.types.OBJECT)
+        self.push_scope(global_constants.basic_types.OBJECT)
         
         abort_m_i = TableItem(
             lex=constants.object.ABORT,
-            typ=constants.types.OBJECT,
-            token=types.ID,
+            typ=global_constants.basic_types.OBJECT,
+            token=global_constants.token_types.ID,
             line=(0, 0),
-            sem_kind=constants.METHOD,
-            param_method=constants.VALUE
+            sem_kind=global_constants.sem_kinds.METHOD,
+            param_method=constants.param_methods.VALUE
         )
         
         self.insert(abort_m_i)
         
         type_name_m_i = TableItem(
             lex=constants.object.TYPE_NAME,
-            typ=constants.types.STRING,
-            token=types.ID,
+            typ=global_constants.basic_types.STRING,
+            token=global_constants.token_types.ID,
             line=(0, 0),
-            sem_kind=constants.METHOD,
-            param_method=constants.VALUE
+            sem_kind=global_constants.sem_kinds.METHOD,
+            param_method=constants.param_methods.VALUE
         )
         
         self.insert(type_name_m_i)
         
         copy_m_i = TableItem(
             lex=constants.object.COPY,
-            typ=constants.types.OBJECT,
-            token=types.ID,
+            typ=global_constants.basic_types.OBJECT,
+            token=global_constants.token_types.ID,
             line=(0, 0),
-            sem_kind=constants.METHOD,
-            param_method=constants.VALUE
+            sem_kind=global_constants.sem_kinds.METHOD,
+            param_method=constants.param_methods.VALUE
         )
         
         self.insert(copy_m_i)
@@ -125,23 +127,23 @@ class SymbolTable(metaclass=MySingleton):
         
     def add_string(self):
         string_i = TableItem(
-            lex=constants.types.STRING,
-            token=types.TYPE,
+            lex=global_constants.basic_types.STRING,
+            token=global_constants.token_types.TYPE,
             line=(0, 0),
-            sem_kind=constants.CLASS,
-            param_method=constants.VALUE
+            sem_kind=global_constants.sem_kinds.CLASS,
+            param_method=constants.param_methods.VALUE
         )
         self.insert(string_i)
         
-        self.push_scope(constants.types.STRING)
+        self.push_scope(global_constants.basic_types.STRING)
         
         length_m_i = TableItem(
             lex=constants.string.LENGTH,
-            token=types.ID,
-            typ=constants.types.INT,
+            token=global_constants.token_types.ID,
+            typ=global_constants.basic_types.INT,
             line=(0, 0),
-            sem_kind=constants.METHOD,
-            param_method=constants.VALUE,
+            sem_kind=global_constants.sem_kinds.METHOD,
+            param_method=constants.param_methods.VALUE,
         )
         
         self.push_scope(constants.string.LENGTH)
@@ -152,11 +154,11 @@ class SymbolTable(metaclass=MySingleton):
         
         concat_m_i = TableItem(
             lex=constants.string.CONCAT,
-            token=types.ID,
-            typ=constants.types.STRING,
+            token=global_constants.token_types.ID,
+            typ=global_constants.basic_types.STRING,
             line=(0, 0),
-            sem_kind=constants.METHOD,
-            param_method=constants.VALUE,
+            sem_kind=global_constants.sem_kinds.METHOD,
+            param_method=constants.param_methods.VALUE,
             param_num=1
         )
         
@@ -166,11 +168,11 @@ class SymbolTable(metaclass=MySingleton):
         
         concat_p_i = TableItem(
             lex = 's',
-            token=types.ID,
-            typ=constants.types.STRING,
+            token=global_constants.token_types.ID,
+            typ=global_constants.basic_types.STRING,
             line=(0, 0),
-            sem_kind=constants.PARAMETER,
-            param_method=constants.VALUE,
+            sem_kind=global_constants.sem_kinds.PARAMETER,
+            param_method=constants.param_methods.VALUE,
         )
         
         self.insert(concat_p_i)
@@ -179,11 +181,11 @@ class SymbolTable(metaclass=MySingleton):
         
         substr_m_i = TableItem(
             lex=constants.string.SUBSTR,
-            token=types.ID,
-            typ=constants.types.STRING,
+            token=global_constants.token_types.ID,
+            typ=global_constants.basic_types.STRING,
             line=(0, 0),
-            sem_kind=constants.METHOD,
-            param_method=constants.VALUE,
+            sem_kind=global_constants.sem_kinds.METHOD,
+            param_method=constants.param_methods.VALUE,
             param_num=2
         )
         
@@ -193,22 +195,22 @@ class SymbolTable(metaclass=MySingleton):
         
         substr_p_i_1 = TableItem(
             lex = 'i',
-            token=types.ID,
-            typ=constants.types.INT,
+            token=global_constants.token_types.ID,
+            typ=global_constants.basic_types.INT,
             line=(0, 0),
-            sem_kind=constants.PARAMETER,
-            param_method=constants.VALUE,
+            sem_kind=global_constants.sem_kinds.PARAMETER,
+            param_method=constants.param_methods.VALUE,
         )
         
         self.insert(substr_p_i_1)
         
         substr_p_i_2 = TableItem(
             lex = 'l',
-            token=types.ID,
-            typ=constants.types.INT,
+            token=global_constants.token_types.ID,
+            typ=global_constants.basic_types.INT,
             line=(0, 0),
-            sem_kind=constants.PARAMETER,
-            param_method=constants.VALUE,
+            sem_kind=global_constants.sem_kinds.PARAMETER,
+            param_method=constants.param_methods.VALUE,
         )
         
         self.insert(substr_p_i_2)
@@ -219,23 +221,23 @@ class SymbolTable(metaclass=MySingleton):
     
     def add_io(self):        
         io_i = TableItem(
-            lex=constants.types.IO,
-            token=types.TYPE,
+            lex=global_constants.basic_types.IO,
+            token=global_constants.token_types.TYPE,
             line=(0, 0),
-            sem_kind=constants.CLASS,
-            param_method=constants.VALUE
+            sem_kind=global_constants.sem_kinds.CLASS,
+            param_method=constants.param_methods.VALUE
         )
         self.insert(io_i)
         
-        self.push_scope(constants.types.IO)
+        self.push_scope(global_constants.basic_types.IO)
         
         out_string_m_i = TableItem(
             lex=constants.io.OUT_STRING,
-            token=types.ID,
-            typ=constants.types.IO,
+            token=global_constants.token_types.ID,
+            typ=global_constants.basic_types.IO,
             line=(0, 0),
-            sem_kind=constants.METHOD,
-            param_method=constants.VALUE,
+            sem_kind=global_constants.sem_kinds.METHOD,
+            param_method=constants.param_methods.VALUE,
             param_num=1
         )
         
@@ -245,11 +247,11 @@ class SymbolTable(metaclass=MySingleton):
         
         out_string_p_i = TableItem(
             lex='x',
-            token=types.ID,
-            typ=constants.types.STRING,
+            token=global_constants.token_types.ID,
+            typ=global_constants.basic_types.STRING,
             line=(0, 0),
-            sem_kind=constants.PARAMETER,
-            param_method=constants.VALUE,
+            sem_kind=global_constants.sem_kinds.PARAMETER,
+            param_method=constants.param_methods.VALUE,
         )
         
         self.insert(out_string_p_i)
@@ -259,11 +261,11 @@ class SymbolTable(metaclass=MySingleton):
         
         out_int_m_i = TableItem(
             lex=constants.io.OUT_INT,
-            token=types.ID,
-            typ=constants.types.IO,
+            token=global_constants.token_types.ID,
+            typ=global_constants.basic_types.IO,
             line=(0, 0),
-            sem_kind=constants.METHOD,
-            param_method=constants.VALUE,
+            sem_kind=global_constants.sem_kinds.METHOD,
+            param_method=constants.param_methods.VALUE,
             param_num=1
         )
         
@@ -273,11 +275,11 @@ class SymbolTable(metaclass=MySingleton):
         
         out_int_p_i = TableItem(
             lex='x',
-            token=types.ID,
-            typ=constants.types.INT,
+            token=global_constants.token_types.ID,
+            typ=global_constants.basic_types.INT,
             line=(0, 0),
-            sem_kind=constants.PARAMETER,
-            param_method=constants.VALUE,
+            sem_kind=global_constants.sem_kinds.PARAMETER,
+            param_method=constants.param_methods.VALUE,
         )
         
         self.insert(out_int_p_i)
@@ -287,11 +289,11 @@ class SymbolTable(metaclass=MySingleton):
         
         in_string_m_i = TableItem(
             lex=constants.io.IN_STRING,
-            token=types.ID,
-            typ=constants.types.STRING,
+            token=global_constants.token_types.ID,
+            typ=global_constants.basic_types.STRING,
             line=(0, 0),
-            sem_kind=constants.METHOD,
-            param_method=constants.VALUE,
+            sem_kind=global_constants.sem_kinds.METHOD,
+            param_method=constants.param_methods.VALUE,
         )
         
         self.insert(in_string_m_i)
@@ -302,11 +304,11 @@ class SymbolTable(metaclass=MySingleton):
         
         in_int_m_i = TableItem(
             lex=constants.io.IN_INT,
-            token=types.ID,
-            typ=constants.types.INT,
+            token=global_constants.token_types.ID,
+            typ=global_constants.basic_types.INT,
             line=(0, 0),
-            sem_kind=constants.METHOD,
-            param_method=constants.VALUE,
+            sem_kind=global_constants.sem_kinds.METHOD,
+            param_method=constants.param_methods.VALUE,
         )
         
         self.insert(in_int_m_i)
@@ -345,7 +347,7 @@ class SymbolTable(metaclass=MySingleton):
         
     def insert(self, item: TableItem) -> bool:
         if (item.lex, item.sem_kind) in map(lambda x: (x.lex, x.sem_kind), self.tables[self.actual_scope].items):
-            self.msgs_db.insert_error(item.line, constants.KIND_TABLE_ERROR[item.sem_kind] + ' ' + item.lex + ' ya declarada ')
+            self.msgs_db.insert_error(item.line, global_constants.sem_kinds.KIND_TABLE_ERROR[item.sem_kind] + ' ' + item.lex + ' ya declarada ')
             return False
         else:
             self.tables[self.actual_scope].items.append(item)
@@ -392,7 +394,7 @@ class SymbolTable(metaclass=MySingleton):
     
     @symbol_table.deleter
     def symbol_table(self):
-        self.tables = [Table(name=constants.GLOBAL)]
+        self.tables = [Table(name=constants.string_literals.GLOBAL)]
         self.scopes = [0]
         self.lets_counter = 0
         

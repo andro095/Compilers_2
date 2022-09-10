@@ -1,15 +1,12 @@
 # Generated from /Users/andrerodriguez/Documents/Github/University/Compilers_2/backend/MyModules/YAPL/Yapl.g4 by ANTLR 4.10.1
-from antlr4 import *
+from antlr4 import ParseTreeVisitor
 if __name__ is not None and "." in __name__:
     from .YaplParser import YaplParser
 else:
     from YaplParser import YaplParser
     
 from SymbolTable import SymbolTable, TableOperations
-
 from ConsoleMessages import MessagesDB
-
-from .YaplConstants import constants
 
 from Global import global_constants
 
@@ -24,7 +21,6 @@ class YaplVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by YaplParser#program.
     def visitProgram(self, ctx:YaplParser.ProgramContext):
-        print('Visito')
         self.visitChildren(ctx)
         self.symbol_table.check_main()
         print('Tablas de símbolos:\n %s.' % str(self.symbol_table))
@@ -45,12 +41,12 @@ class YaplVisitor(ParseTreeVisitor):
     def visitFeature(self, ctx:YaplParser.FeatureContext):
         inserted = self.table_operations.insert_feature(ctx)
         if inserted:
-            if ctx.children[1].getText() != constants.TYPE_DELIMITER:
+            if ctx.children[1].getText() != global_constants.string_cons.TYPE_DELIMITER:
                 self.symbol_table.push_scope(ctx.children[0].getText()) 
                 
             self.visitChildren(ctx)
             
-            if ctx.children[1].getText() != constants.TYPE_DELIMITER:
+            if ctx.children[1].getText() != global_constants.string_cons.TYPE_DELIMITER:
                 self.symbol_table.pop_scope()
 
 
@@ -63,7 +59,7 @@ class YaplVisitor(ParseTreeVisitor):
     def visitExpr(self, ctx:YaplParser.ExprContext):
         if not ctx.children:
             return
-        if ctx.children[0].getText().lower() == constants.LET:
+        if ctx.children[0].getText().lower() == global_constants.string_cons.LET:
             inserted = self.table_operations.insert_expr(ctx)
             if inserted:
                 self.visitChildren(ctx)

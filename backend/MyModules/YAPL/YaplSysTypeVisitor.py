@@ -1,6 +1,4 @@
-from ast import Param
-from asyncio import constants
-from antlr4 import *
+from antlr4 import ParseTreeVisitor
 from antlr4.tree.Tree import TerminalNodeImpl
 
 if __name__ is not None and "." in __name__:
@@ -10,13 +8,13 @@ else:
     
 from ConsoleMessages import MessagesDB
 
-from .YaplUtils import evaluate_terminal_children, get_no_terminal_indexes, some_error_type
+from .YaplUtils import evaluate_terminal_children, some_error_type
 from Global import global_constants
 
 from SymbolTable import SymbolTable, TableItem
 from TypesSystem import types_sys
 
-from .YaplConstants import constants
+
     
     
 class YaplSysTypeVisitor(ParseTreeVisitor):
@@ -45,9 +43,9 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
         typs = self.visit_children(ctx, res)
         
         if some_error_type(typs):
-            return global_constants.ERROR_TYPE
+            return global_constants.results_types.ERROR_TYPE
             
-        return global_constants.CHECK_TYPE
+        return global_constants.results_types.CHECK_TYPE
         
     
     # Visit a parse tree produced by YaplParser#class.
@@ -63,13 +61,13 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
             
             
             if some_error_type(typs):
-                return global_constants.ERROR_TYPE
+                return global_constants.results_types.ERROR_TYPE
             
             self.symbol_table.exit_scope()
             
-            return global_constants.CHECK_TYPE
+            return global_constants.results_types.CHECK_TYPE
         else:
-            return global_constants.ERROR_TYPE
+            return global_constants.results_types.ERROR_TYPE
         
     
     # Visit a parse tree produced by YaplParser#feature.
@@ -84,23 +82,23 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
         if feature_exists:
             feature: TableItem = self.symbol_table.get(ctx.children[0].getText())
             
-            if feature.sem_kind == global_constants.METHOD:
+            if feature.sem_kind == global_constants.sem_kinds.METHOD:
                 self.symbol_table.enter_scope(ctx.children[0].getText())
                 
             typs = self.visit_children(ctx, res)
             
             
             if some_error_type(typs):
-                return global_constants.ERROR_TYPE
+                return global_constants.results_types.ERROR_TYPE
             
             validation = types_sys.validate_feature(ctx, typs)
             
-            if feature.sem_kind == global_constants.METHOD:
+            if feature.sem_kind == global_constants.sem_kinds.METHOD:
                 self.symbol_table.exit_scope()
                 
             return validation
         else:
-            return global_constants.ERROR_TYPE
+            return global_constants.results_types.ERROR_TYPE
         
 
     # Visit a parse tree produced by YaplParser#formal.
@@ -119,23 +117,23 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
             typs = self.get_type(ctx)
             return typs
         else:
-            if ctx.children[0].getText().lower() == constants.LET:
-                let_exists = self.symbol_table.exists(constants.LET + str(self.analized_lets))
+            if ctx.children[0].getText().lower() == global_constants.string_cons.LET:
+                let_exists = self.symbol_table.exists(global_constants.string_cons.LET + str(self.analized_lets))
                 if let_exists:
-                    self.symbol_table.enter_scope(constants.LET + str(self.analized_lets))
+                    self.symbol_table.enter_scope(global_constants.string_cons.LET + str(self.analized_lets))
                 else:
                     line = (ctx.start.line, ctx.start.column)
                     self.msg_db.insert_error(line, f'La let no existe.')
-                    return global_constants.ERROR_TYPE
+                    return global_constants.results_types.ERROR_TYPE
                 
             typs = self.visit_children(ctx, res)
             
             if some_error_type(typs):
-                return global_constants.ERROR_TYPE
+                return global_constants.results_types.ERROR_TYPE
         
             validation = types_sys.validate_expr(ctx, typs, res)
             
-            if ctx.children[0].getText().lower() == constants.LET:
+            if ctx.children[0].getText().lower() == global_constants.string_cons.LET:
                 self.symbol_table.exit_scope()
                 self.analized_lets += 1
                 

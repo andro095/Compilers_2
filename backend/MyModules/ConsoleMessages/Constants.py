@@ -1,5 +1,10 @@
 
+class MessageTypes:
+    ERROR = 'error'
+    WARNING = 'warning'
+    SUCCESS = 'success'    
+
 class Constants:
-    MESSAGES_FILE_NAME = "messages.json"
+    msgs_types = MessageTypes()
     
-message_constants = Constants()
+msg_consts = Constants()
