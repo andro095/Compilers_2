@@ -1,4 +1,7 @@
 
+from lib2to3.pgen2.token import STRING
+
+
 class PhaseError:
     LEXIC = 'léxico'
     SINTACTIC = 'sintáctico'
@@ -61,6 +64,12 @@ class BasicTypes:
     STRING = 'String'
     IO = 'IO'
     SELF_TYPE = 'SELF_TYPE'
+    
+class ByteSize:
+    INT = 4
+    STRING = 50
+    BOOL = 1
+    CLASS = 100
 
 class SemanticKinds:
     CLASS = 'class'
@@ -90,6 +99,7 @@ class GlobalConstants:
     basic_types = BasicTypes()    
     BASIC_TYPES = [basic_types.INT, basic_types.BOOL, basic_types.STRING]
     
+    byte_size = ByteSize()
     phase_error = PhaseError()
     results_types = ResultsTypes()
     sem_kinds = SemanticKinds()

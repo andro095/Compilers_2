@@ -18,6 +18,11 @@ class YaplVisitor(ParseTreeVisitor):
         self.symbol_table = SymbolTable()
         self.table_operations = TableOperations()
         self.msg_db = MessagesDB()
+        
+    def get_class_total_size(self, name: str) -> int:
+        for symbol in self.symbol_table.tables[0].items:
+            if symbol.lex == name:
+                return symbol.byte_size
 
     # Visit a parse tree produced by YaplParser#program.
     def visitProgram(self, ctx:YaplParser.ProgramContext):
@@ -34,6 +39,15 @@ class YaplVisitor(ParseTreeVisitor):
             line = (ctx.children[0].symbol.line, ctx.children[0].symbol.column)
             self.table_operations.insert_self(line)
             self.visitChildren(ctx)
+            print(f'{ctx.children[1].getText()}, {self.symbol_table.tables[self.symbol_table.actual_scope].name}')
+            actual_table = self.symbol_table.tables[self.symbol_table.actual_scope]
+            byte_sizes = list(map(lambda symbol: symbol.byte_size if symbol.typ != actual_table.name else 0, actual_table.items))
+            self.symbol_table.add_byte_size(0, actual_table.name, sum(byte_sizes))
+            byte_size = self.get_class_total_size(actual_table.name)
+            
+            for item in self.symbol_table.tables[self.symbol_table.actual_scope].items:
+                if item.typ == actual_table.name:
+                    item.byte_size = byte_size
             self.symbol_table.pop_scope()
 
 

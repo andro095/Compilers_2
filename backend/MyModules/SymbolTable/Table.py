@@ -12,6 +12,7 @@ class TableItem(BaseModel):
     token: int
     line: tuple[int, int]
     sem_kind: str
+    byte_size: int = 0
     param_method: str | None = None
     typ: str | None = None
     param_num: int = 0
@@ -380,6 +381,14 @@ class SymbolTable(metaclass=MySingleton):
     def exists_in_table(self, index: int, name):
         for row in self.tables[index].items:
             if row.lex == name:
+                return True
+                
+        return False
+    
+    def add_byte_size(self, index: int, name: str, size: int):
+        for row in self.tables[index].items:
+            if row.lex == name:
+                row.byte_size += size
                 return True
                 
         return False
