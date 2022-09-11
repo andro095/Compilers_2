@@ -17,6 +17,7 @@ class TableItem(BaseModel):
     typ: str | None = None
     param_num: int = 0
     mem_pos: int = 0
+    mem_base: int = 0
     inherits: str | None = None
 
 class Table(BaseModel):
@@ -30,6 +31,8 @@ class SymbolTable(metaclass=MySingleton):
         self.scopes = [0]
         self.msgs_db = MessagesDB()
         self.lets_counter = 0
+        self.heap_counter = 0
+        self.stack_counter = 0
         
         self.add_basic_types()
         
@@ -66,6 +69,7 @@ class SymbolTable(metaclass=MySingleton):
             token=global_constants.token_types.TYPE,
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.CLASS,
+            byte_size=global_constants.byte_size.INT,
         )
         self.insert(int_item)
         
@@ -75,7 +79,8 @@ class SymbolTable(metaclass=MySingleton):
             token=global_constants.token_types.TYPE,
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.CLASS,
-            param_method=constants.param_methods.VALUE
+            param_method=constants.param_methods.VALUE,
+            byte_size=global_constants.byte_size.BOOL
         )
         self.insert(bool_item)
         
@@ -85,7 +90,8 @@ class SymbolTable(metaclass=MySingleton):
             token=global_constants.token_types.TYPE,
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.CLASS,
-            param_method=constants.param_methods.VALUE
+            param_method=constants.param_methods.VALUE,
+            byte_size=global_constants.byte_size.CLASS
         )
         self.insert(object_i)
         
@@ -97,7 +103,8 @@ class SymbolTable(metaclass=MySingleton):
             token=global_constants.token_types.ID,
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.METHOD,
-            param_method=constants.param_methods.VALUE
+            param_method=constants.param_methods.VALUE,
+            byte_size=global_constants.byte_size.CLASS
         )
         
         self.insert(abort_m_i)
@@ -108,7 +115,8 @@ class SymbolTable(metaclass=MySingleton):
             token=global_constants.token_types.ID,
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.METHOD,
-            param_method=constants.param_methods.VALUE
+            param_method=constants.param_methods.VALUE,
+            byte_size=global_constants.byte_size.STRING
         )
         
         self.insert(type_name_m_i)
@@ -119,7 +127,8 @@ class SymbolTable(metaclass=MySingleton):
             token=global_constants.token_types.ID,
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.METHOD,
-            param_method=constants.param_methods.VALUE
+            param_method=constants.param_methods.VALUE,
+            byte_size=global_constants.byte_size.CLASS
         )
         
         self.insert(copy_m_i)
@@ -132,7 +141,8 @@ class SymbolTable(metaclass=MySingleton):
             token=global_constants.token_types.TYPE,
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.CLASS,
-            param_method=constants.param_methods.VALUE
+            param_method=constants.param_methods.VALUE,
+            byte_size=global_constants.byte_size.STRING
         )
         self.insert(string_i)
         
@@ -145,6 +155,7 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.METHOD,
             param_method=constants.param_methods.VALUE,
+            byte_size=global_constants.byte_size.INT
         )
         
         self.push_scope(constants.string.LENGTH)
@@ -160,7 +171,8 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.METHOD,
             param_method=constants.param_methods.VALUE,
-            param_num=1
+            param_num=1,
+            byte_size=global_constants.byte_size.STRING
         )
         
         self.insert(concat_m_i)
@@ -174,6 +186,7 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.PARAMETER,
             param_method=constants.param_methods.VALUE,
+            byte_size=global_constants.byte_size.STRING
         )
         
         self.insert(concat_p_i)
@@ -187,7 +200,8 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.METHOD,
             param_method=constants.param_methods.VALUE,
-            param_num=2
+            param_num=2,
+            byte_size=global_constants.byte_size.STRING
         )
         
         self.insert(substr_m_i)
@@ -201,6 +215,7 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.PARAMETER,
             param_method=constants.param_methods.VALUE,
+            byte_size=global_constants.byte_size.INT
         )
         
         self.insert(substr_p_i_1)
@@ -212,6 +227,7 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.PARAMETER,
             param_method=constants.param_methods.VALUE,
+            byte_size=global_constants.byte_size.INT
         )
         
         self.insert(substr_p_i_2)
@@ -226,7 +242,8 @@ class SymbolTable(metaclass=MySingleton):
             token=global_constants.token_types.TYPE,
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.CLASS,
-            param_method=constants.param_methods.VALUE
+            param_method=constants.param_methods.VALUE,
+            byte_size=global_constants.byte_size.CLASS + 2 * global_constants.byte_size.INT + 2 * global_constants.byte_size.STRING
         )
         self.insert(io_i)
         
@@ -239,7 +256,8 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.METHOD,
             param_method=constants.param_methods.VALUE,
-            param_num=1
+            param_num=1,
+            byte_size=io_i.byte_size
         )
         
         self.insert(out_string_m_i)
@@ -253,6 +271,7 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.PARAMETER,
             param_method=constants.param_methods.VALUE,
+            byte_size=global_constants.byte_size.STRING
         )
         
         self.insert(out_string_p_i)
@@ -267,7 +286,8 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.METHOD,
             param_method=constants.param_methods.VALUE,
-            param_num=1
+            param_num=1,
+            byte_size=io_i.byte_size
         )
         
         self.insert(out_int_m_i)
@@ -281,6 +301,7 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.PARAMETER,
             param_method=constants.param_methods.VALUE,
+            byte_size=global_constants.byte_size.INT
         )
         
         self.insert(out_int_p_i)
@@ -295,6 +316,7 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.METHOD,
             param_method=constants.param_methods.VALUE,
+            byte_size=global_constants.byte_size.STRING
         )
         
         self.insert(in_string_m_i)
@@ -310,6 +332,7 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.METHOD,
             param_method=constants.param_methods.VALUE,
+            byte_size=global_constants.byte_size.INT
         )
         
         self.insert(in_int_m_i)
@@ -392,7 +415,33 @@ class SymbolTable(metaclass=MySingleton):
                 return True
                 
         return False
+    
+    def increase_stack_pos(self, size: int) -> int:
+        self.stack_counter += size
+        return self.stack_counter - size
+        
+    def increase_heap_pos(self, size: int) -> int:
+        self.heap_counter += size
+        return self.heap_counter - size
 
+    def set_mem_pos(self, name: str, pos: int):
+        for index, symbol in enumerate(self.tables[self.actual_scope].items):
+            if symbol.lex == name:
+                self.tables[self.actual_scope].items[index].mem_pos = pos
+                return True
+        return False
+    
+    def allocate_mem_pos(self, mem_base: int, mem_size: int) -> int:
+        if mem_base == global_constants.base_memory.HEAP:
+            return self.increase_heap_pos(mem_size)
+        else:
+            return self.increase_stack_pos(mem_size)
+        
+    def update_mem_positions(self):
+        for table in self.tables:
+            for item in table.items:
+                item.mem_pos = self.allocate_mem_pos(item.mem_base, item.byte_size)
+    
     @property
     def actual_scope(self):
         return self.scopes[-1]

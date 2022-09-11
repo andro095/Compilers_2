@@ -28,6 +28,7 @@ class YaplVisitor(ParseTreeVisitor):
     def visitProgram(self, ctx:YaplParser.ProgramContext):
         self.visitChildren(ctx)
         self.symbol_table.check_main()
+        self.symbol_table.update_mem_positions()
         print('Tablas de símbolos:\n %s.' % str(self.symbol_table))
 
 

@@ -8,6 +8,7 @@ from Global import global_constants
 
 
 #TODO: Actualizar el tamaño de los let
+#TODO: Agregar procedimientos a la tabla de simbolos
 class TableOperations:
     def __init__(self) -> None:
         self.symbol_table = SymbolTable()
@@ -26,8 +27,9 @@ class TableOperations:
             
         return -1
     
+    
+    
     def insert_self(self, line: tuple[int, int]):
-        
         table_item = TableItem(
             lex=constants.string_literals.SELF,
             token=global_constants.token_types.ID,
@@ -35,8 +37,10 @@ class TableOperations:
             line=line,
             sem_kind=global_constants.sem_kinds.ATTR,
             param_method=constants.param_methods.REF,
-            byte_size=global_constants.byte_size.CLASS
+            byte_size=global_constants.byte_size.CLASS,
+            mem_base=global_constants.base_memory.HEAP
         )
+        
         return self.symbol_table.insert(table_item)
         
     def insert_class(self, ctx: YaplParser.ClassContext) -> bool:
@@ -80,10 +84,12 @@ class TableOperations:
         sem_kind = global_constants.sem_kinds.METHOD if children[1] != global_constants.string_cons.TYPE_DELIMITER else global_constants.sem_kinds.ATTR    
         param_num = 0
         byte_size = 0
+        mem_base = global_constants.base_memory.HEAP
         
         if sem_kind == global_constants.sem_kinds.METHOD:
             cround = indx(children, constants.string_literals.CROUND)
             param_num = len(list(filter(lambda x: x != constants.string_literals.COMMA, children[2:cround])))
+            mem_base = global_constants.base_memory.STACK
        
         if children[ind + 1].lower() == global_constants.basic_types.INT.lower():
             byte_size = global_constants.byte_size.INT
@@ -107,7 +113,8 @@ class TableOperations:
             sem_kind=sem_kind,
             param_method=constants.param_methods.REF,
             param_num=param_num,
-            byte_size=byte_size
+            byte_size=byte_size,
+            mem_base=mem_base
         )
         return self.symbol_table.insert(table_item)
         
@@ -141,7 +148,8 @@ class TableOperations:
             line=line,
             sem_kind=global_constants.sem_kinds.PARAMETER,
             param_method=constants.param_methods.REF,
-            byte_size=byte_size
+            byte_size=byte_size,
+            mem_base=global_constants.base_memory.HEAP
         )
         
         return self.symbol_table.insert(table_item)

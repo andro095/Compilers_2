@@ -94,11 +94,16 @@ class StringConstants:
     LET = 'let'
     IN = 'in'
     TYPE_DELIMITER = ':'
+    
+class BaseMemory:
+    HEAP = 0
+    STACK = 1
 
 class GlobalConstants:      
     basic_types = BasicTypes()    
     BASIC_TYPES = [basic_types.INT, basic_types.BOOL, basic_types.STRING]
     
+    base_memory = BaseMemory()
     byte_size = ByteSize()
     phase_error = PhaseError()
     results_types = ResultsTypes()
