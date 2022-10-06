@@ -81,12 +81,13 @@ def execute_code(code: Code) -> dict:
                 
 
     messages = msgs_db.messages
+    intercode = ''
     
     del sym_table.symbol_table
     del msgs_db.messages
     del msgs_db.error_flag
         
-    return { 'messages': messages }
+    return { 'messages': messages, 'intercode': intercode }
 
 
 

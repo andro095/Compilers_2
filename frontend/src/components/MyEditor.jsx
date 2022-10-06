@@ -9,7 +9,7 @@ export const MyEditor = ({ program, setProgram, msgs=[] }) => {
             <Editor
                 height="75%"
                 width="100%"
-                defaultValue="-- Start writing your code here"
+                defaultValue="-- Escriba aqui su codigo"
                 className='shadow-4'
                 value={ program }
                 onChange={ setProgram }
