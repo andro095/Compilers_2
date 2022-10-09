@@ -135,7 +135,6 @@ expr: expr (ARROBA TYPE)? POINT ID LROUND ( expr (COMMA expr)* )? RROUND |
       IF expr THEN expr ELSE expr FI |
       WHILE expr LOOP expr POOL |
       LCURLY (expr SEMICOLON)+ RCURLY |
-      LET ID COLON TYPE (ASIGN expr)? (COMMA ID COLON TYPE (ASIGN expr)?)* IN expr |
       NEW TYPE |
       LROUND expr RROUND |
       INT_NOT expr |
@@ -144,6 +143,7 @@ expr: expr (ARROBA TYPE)? POINT ID LROUND ( expr (COMMA expr)* )? RROUND |
       expr (ADD | SUB) expr |
       expr (LESS_THAN | LESS_EQUAL | EQUAL) expr |
       NOT expr |
+      LET ID COLON TYPE (ASIGN expr)? (COMMA ID COLON TYPE (ASIGN expr)?)* IN expr |
       ID ASIGN expr |
       ID |
       INTEGER |
