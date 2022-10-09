@@ -101,6 +101,9 @@ class TypeSystem:
                     return global_constants.results_types.CHECK_TYPE
                 
                 if types[4] != feature_item.typ and types[4] != global_constants.basic_types.SELF_TYPE:
+                    if self.sym_table.inherits_from(feature_item.typ, types[4]):
+                        return global_constants.results_types.CHECK_TYPE
+                    
                     self.msgs_db.insert_error(line, f'El tipo de la variable {ctx.children[4].getText()}: {types[4]}, no es del mismo tipo que {feature_item.lex}: {feature_item.typ}.')
                     return global_constants.results_types.ERROR_TYPE
                 else:
@@ -359,7 +362,17 @@ class TypeSystem:
         line = (ctx.start.line, ctx.start.column)
         
         if self.sym_table.exists(types[0]) and self.sym_table.exists(ctx.children[2].getText()):
-            table_index = self.sym_table.get_table_index(types[0])
+            if not self.sym_table.inherits_from(types[0], ctx.children[2].getText()):
+                
+                msg = f'El tipo de la expresión, {types[0]}, no hereda de {ctx.children[2].getText()}.'
+                
+                if types[0] == ctx.children[2].getText():
+                    msg = f'El tipo de la expresión, {types[0]}, no hereda de si mismo.'
+                
+                self.msgs_db.insert_error(line, msg)
+                return global_constants.results_types.ERROR_TYPE
+            
+            table_index = self.sym_table.get_table_index(ctx.children[2].getText())
             id_exists = self.sym_table.exists_in_table(table_index, ctx.children[4].getText())
             
             if id_exists:
@@ -386,17 +399,17 @@ class TypeSystem:
                 
                 for i in range(elem.param_num):
                     if table.items[i].typ != types[indx]:
-                        self.msgs_db.insert_error(line, f'El tipo de la expresión: {types[indx]} no es del tipo esperado para el parámetro {table.items[i].lex}: {table.items[i].typ}.')
+                        self.msgs_db.insert_error(line, f'El tipo de la expresión, {types[indx]}, no es del tipo esperado para el parámetro {table.items[i].lex}: {table.items[i].typ}.')
                         return global_constants.results_types.ERROR_TYPE
                     else:
                         indx += 2
                 
-                return elem.typ
+                return types[0]
             else:
                 self.msgs_db.insert_error(line, f'El método {ctx.children[4].getText()} no existe.')
                 return global_constants.results_types.ERROR_TYPE
         else: 
-            self.msgs_db.insert_error(line, f'El tipo de la expresión {types[0]} o {ctx.children[2].getText()} no existe.')
+            self.msgs_db.insert_error(line, f'El tipo de la expresión {types[0]} o el tipo {ctx.children[2].getText()} no existe.')
             return global_constants.results_types.ERROR_TYPE
             
         

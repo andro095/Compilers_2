@@ -109,6 +109,9 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
     # Visit a parse tree produced by YaplParser#expr.
     def visitExpr(self, ctx:YaplParser.ExprContext):
         
+        if not ctx.children:
+            return global_constants.results_types.ERROR_TYPE
+        
         res = evaluate_terminal_children(ctx.children) 
                 
         typs = []

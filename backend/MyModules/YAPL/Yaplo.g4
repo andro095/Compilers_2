@@ -1,4 +1,4 @@
-grammar Yapl;
+grammar Yaplm;
 
 // Reglas del Scanner
 
@@ -130,21 +130,25 @@ feature: ID LROUND ( formal (COMMA formal)* )? RROUND COLON TYPE LCURLY expr RCU
 
 formal: ID COLON TYPE;
 
-expr: expr (ARROBA TYPE)? POINT ID LROUND ( expr (COMMA expr)* )? RROUND |
+expr: ID ASIGN expr |
+      expr (ARROBA TYPE)? POINT ID LROUND ( expr (COMMA expr)* )? RROUND |
       ID LROUND ( expr (COMMA expr)* )? RROUND |
       IF expr THEN expr ELSE expr FI |
       WHILE expr LOOP expr POOL |
       LCURLY (expr SEMICOLON)+ RCURLY |
       LET ID COLON TYPE (ASIGN expr)? (COMMA ID COLON TYPE (ASIGN expr)?)* IN expr |
       NEW TYPE |
-      LROUND expr RROUND |
-      INT_NOT expr |
       ISVOID expr |
-      expr (MULTIPLY | DIVIDE) expr |
-      expr (ADD | SUB) expr |
-      expr (LESS_THAN | LESS_EQUAL | EQUAL) expr |
+      expr ADD expr |
+      expr SUB expr |
+      expr MULTIPLY expr |
+      expr DIVIDE expr |
+      INT_NOT expr |
+      expr LESS_THAN expr |
+      expr LESS_EQUAL expr |
+      expr EQUAL expr |
       NOT expr |
-      ID ASIGN expr |
+      LROUND expr RROUND |
       ID |
       INTEGER |
       STRING |

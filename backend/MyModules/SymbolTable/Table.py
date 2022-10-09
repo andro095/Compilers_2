@@ -416,6 +416,14 @@ class SymbolTable(metaclass=MySingleton):
                 
         return False
     
+    def inherits_from(self, child: str, parent: str):
+        if child == parent:
+            return False
+        
+        elem: TableItem = self.get_from_table(0, child)
+        
+        return parent == elem.inherits
+    
     def increase_stack_pos(self, size: int) -> int:
         self.stack_counter += size
         return self.stack_counter - size

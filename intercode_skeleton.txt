@@ -1,0 +1,25 @@
+op:
+
+    base:
+
+        c = a op b
+
+        tn = a op b
+        m[c_pos] = tn
+
+    ejemplos:
+        basico:
+            x + y * z
+
+            t1 = y * z
+            t2 = x + t1
+
+        avanzado:
+            a + a * ( b – c ) + ( b – c ) * d
+
+            t1 = b – c
+            t2 = a * t1
+            t3 = a + t2
+            t4 = t1 * d
+            t5 = t3 + t4
+
