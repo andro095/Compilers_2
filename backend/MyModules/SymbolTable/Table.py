@@ -1,4 +1,3 @@
-import imp
 from utils.Utils import indx
 from .Constants import constants
 from tabulate import tabulate
@@ -31,8 +30,8 @@ class SymbolTable(metaclass=MySingleton):
         self.scopes = [0]
         self.msgs_db = MessagesDB()
         self.lets_counter = 0
-        self.heap_counter = 0
-        self.stack_counter = 0
+        self.objects_counter = 0
+        self.mem_counter = 0
         
         self.add_basic_types()
         
@@ -84,7 +83,7 @@ class SymbolTable(metaclass=MySingleton):
         )
         self.insert(bool_item)
         
-    def add_object(self):
+    def add_object(self):        
         object_i = TableItem(
             lex=global_constants.basic_types.OBJECT,
             token=global_constants.token_types.TYPE,
@@ -157,10 +156,6 @@ class SymbolTable(metaclass=MySingleton):
             param_method=constants.param_methods.VALUE,
             byte_size=global_constants.byte_size.INT
         )
-        
-        self.push_scope(constants.string.LENGTH)
-        
-        self.pop_scope()
         
         self.insert(length_m_i)
         
@@ -243,7 +238,7 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.CLASS,
             param_method=constants.param_methods.VALUE,
-            byte_size=global_constants.byte_size.CLASS + 2 * global_constants.byte_size.INT + 2 * global_constants.byte_size.STRING
+            byte_size=global_constants.byte_size.CLASS + global_constants.byte_size.INT + global_constants.byte_size.STRING
         )
         self.insert(io_i)
         
@@ -321,10 +316,6 @@ class SymbolTable(metaclass=MySingleton):
         
         self.insert(in_string_m_i)
         
-        self.push_scope(constants.io.IN_STRING)
-        
-        self.pop_scope()
-        
         in_int_m_i = TableItem(
             lex=constants.io.IN_INT,
             token=global_constants.token_types.ID,
@@ -336,11 +327,7 @@ class SymbolTable(metaclass=MySingleton):
         )
         
         self.insert(in_int_m_i)
-        
-        self.push_scope(constants.io.IN_INT)
-        
-        self.pop_scope()
-        
+                
         self.pop_scope()
         
     
@@ -369,6 +356,9 @@ class SymbolTable(metaclass=MySingleton):
             if table.name == scope:
                 return i
         
+        return -1
+    
+    
     def insert(self, item: TableItem) -> bool:
         if (item.lex, item.sem_kind) in map(lambda x: (x.lex, x.sem_kind), self.tables[self.actual_scope].items):
             self.msgs_db.insert_error(item.line, global_constants.sem_kinds.KIND_TABLE_ERROR[item.sem_kind] + ' ' + item.lex + ' ya declarada ')
@@ -416,6 +406,14 @@ class SymbolTable(metaclass=MySingleton):
                 
         return False
     
+    def add_class_size(self, name: str ,size: int):
+        self.get_from_table(0, name).byte_size += size
+    
+    def get_byte_size(self, name: str):
+        table_item = self.get_from_table(0, name)
+        
+        return table_item.byte_size
+    
     def inherits_from(self, child: str, parent: str):
         if child == parent:
             return False
@@ -423,14 +421,6 @@ class SymbolTable(metaclass=MySingleton):
         elem: TableItem = self.get_from_table(0, child)
         
         return parent == elem.inherits
-    
-    def increase_stack_pos(self, size: int) -> int:
-        self.stack_counter += size
-        return self.stack_counter - size
-        
-    def increase_heap_pos(self, size: int) -> int:
-        self.heap_counter += size
-        return self.heap_counter - size
 
     def set_mem_pos(self, name: str, pos: int):
         for index, symbol in enumerate(self.tables[self.actual_scope].items):
@@ -439,20 +429,27 @@ class SymbolTable(metaclass=MySingleton):
                 return True
         return False
     
-    def allocate_mem_pos(self, mem_base: int, mem_size: int) -> int:
-        if mem_base == global_constants.base_memory.HEAP:
-            return self.increase_heap_pos(mem_size)
-        else:
-            return self.increase_stack_pos(mem_size)
+    def allocate_mem_pos(self, mem_size: int) -> int:
+        self.mem_counter += mem_size
+        return self.mem_counter - mem_size
         
-    def update_mem_positions(self):
-        for table in self.tables:
-            for item in table.items:
-                item.mem_pos = self.allocate_mem_pos(item.mem_base, item.byte_size)
+    def update_mem_position(self, index: int):
+        for elem in self.tables[index].items:
+            index = self.get_table_index(elem.lex)
+            
+            if index != -1:
+                self.update_mem_position(index)
+                
+            if elem.sem_kind == global_constants.sem_kinds.ATTR or elem.sem_kind == global_constants.sem_kinds.PARAMETER:
+                elem.mem_pos = self.allocate_mem_pos(elem.byte_size)
     
     @property
     def actual_scope(self):
         return self.scopes[-1]
+    
+    @property
+    def actual_scope_name(self):
+        return self.tables[self.actual_scope].name
     
     @property
     def symbol_table(self):
@@ -466,6 +463,9 @@ class SymbolTable(metaclass=MySingleton):
         
         self.add_basic_types()
 
+    def mem_reset(self):
+        self.mem_counter = 0
+    
     def __str__(self):
         mystr = ''
         for table in self.tables:

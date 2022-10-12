@@ -1,0 +1,157 @@
+1 + 3 * ( b - c ) + ( b - c ) * d
+
+ctxexpr.dir = 't1'
+ctxexpr.code = 't1 = 1'
+
+ctxexpr.dir = 't2'
+ctxexpr.code = 't2 = 3'
+
+ctxexpr.dir = 't3'
+ctxexpr.code = 't3 = m[b_pos]'
+
+ctxexpr.dir = 't4'
+ctxexpr.code = 't4 = m[c_pos]'
+
+ctxexpr.dir = 't5'
+ctxexpr.code = 't3 = m[b_pos]
+                t4 = m[c_pos]
+                t5 = t3 - t4'
+
+ctxexpr.dir = 't5'
+ctxexpr.code = 't3 = m[b_pos]
+                t4 = m[c_pos]
+                t5 = t3 - t4'
+
+ctxexpr.dir = 't6'
+ctxexpr.code = 't2 = 3
+                t3 = m[b_pos]
+                t4 = m[c_pos]
+                t5 = t3 - t4
+                t6 = t2 * t5'
+
+ctxexpr.dir = 't7'
+ctxexpr.code = 't1 = 1
+                t2 = 3
+                t3 = m[b_pos]
+                t4 = m[c_pos]
+                t5 = t3 - t4
+                t6 = t2 * t5
+                t7 = t1 + t6'
+
+ctxexpr.dir = 't8'
+ctxexpr.code = 't8 = m[b_pos]'
+
+ctxexpr.dir = 't9'
+ctxexpr.code = 't9 = m[c_pos]'
+
+ctxexpr.dir = 't10'
+ctxexpr.code = 't8 = m[b_pos]
+                t9 = m[c_pos]
+                t10 = t8 - t9'
+
+ctxexpr.dir = 't10'
+ctxexpr.code = 't8 = m[b_pos]
+                t9 = m[c_pos]
+                t10 = t8 - t9'
+
+ctxexpr.dir = 't11'
+ctxexpr.code = 't11 = m[d_pos]'
+
+ctxexpr.dir = 't12'
+ctxexpr.code = 't8 = m[b_pos]
+                t9 = m[c_pos]
+                t10 = t8 - t9
+                t11 = m[d_pos]
+                t12 = t10 * t11'
+
+ctxexpr.dir = 't13'
+ctxexpr.code = 't1 = 1
+                t2 = 3
+                t3 = m[b_pos]
+                t4 = m[c_pos]
+                t5 = t3 - t4
+                t6 = t2 * t5
+                t7 = t1 + t6
+                t8 = m[b_pos]
+                t9 = m[c_pos]
+                t10 = t8 - t9
+                t11 = m[d_pos]
+                t12 = t10 * t11
+                t13 = t7 + t12'
+
+ctxexpr.dir = 'a[pos]'
+ctxexpr.code = 't1 = 1
+                t2 = 3
+                t3 = m[b_pos]
+                t4 = m[c_pos]
+                t5 = t3 - t4
+                t6 = t2 * t5
+                t7 = t1 + t6
+                t8 = m[b_pos]
+                t9 = m[c_pos]
+                t10 = t8 - t9
+                t11 = m[d_pos]
+                t12 = t10 * t11
+                t13 = t7 + t12
+                a[pos] = t13'
+
+ctxfeature.dir = 'Main.main'
+ctxfeature.code = 'Main.main:   t1 = 1
+                                t2 = 3
+                                t3 = m[b_pos]
+                                t4 = m[c_pos]
+                                t5 = t3 - t4
+                                t6 = t2 * t5
+                                t7 = t1 + t6
+                                t8 = m[b_pos]
+                                t9 = m[c_pos]
+                                t10 = t8 - t9
+                                t11 = m[d_pos]
+                                t12 = t10 * t11
+                                t13 = t7 + t12
+                                a[pos] = t13
+                                return a[pos]
+                     End Main.main:
+                     '
+
+ctxclass.dir = 'Main'
+ctxclass.code = 'Main:
+                 Main.main:
+                    t1 = 1
+                    t2 = 3
+                    t3 = m[b_pos]
+                    t4 = m[c_pos]
+                    t5 = t3 - t4
+                    t6 = t2 * t5
+                    t7 = t1 + t6
+                    t8 = m[b_pos]
+                    t9 = m[c_pos]
+                    t10 = t8 - t9
+                    t11 = m[d_pos]
+                    t12 = t10 * t11
+                    t13 = t7 + t12
+                    a[pos] = t13
+                    return a[pos]
+                 End Main.main'
+
+ctxprogram.dir = 'Program'
+ctxprogram.code = '  Program:
+                     goto Main.main
+                     Main:
+                     Main.main:
+                        t1 = 1
+                        t2 = 3
+                        t3 = m[b_pos]
+                        t4 = m[c_pos]
+                        t5 = t3 - t4
+                        t6 = t2 * t5
+                        t7 = t1 + t6
+                        t8 = m[b_pos]
+                        t9 = m[c_pos]
+                        t10 = t8 - t9
+                        t11 = m[d_pos]
+                        t12 = t10 * t11
+                        t13 = t7 + t12
+                        a[pos] = t13
+                        return a[pos]
+                     End Main.main'

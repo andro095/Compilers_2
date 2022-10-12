@@ -61,7 +61,7 @@ class TypeSystem:
                         line = (ctx.start.line, ctx.start.column)
                         self.msgs_db.insert_errror(line, f'No se puede acceder a {ctx.children[1].getText()} de una variable.')
                         return global_constants.results_types.ERROR_TYPE
-                elif elem.sem_kind == global_constants.METHOD:
+                elif elem.sem_kind == global_constants.sem_kinds.METHOD:
                     if ctx.getChildCount() > 1 and ctx.children[1].symbol.type == global_constants.token_types.LROUND:
                         return elem.typ
                     else: 

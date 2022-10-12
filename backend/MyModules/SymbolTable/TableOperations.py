@@ -58,13 +58,6 @@ class TableOperations:
             return False
         
         byte_size = global_constants.byte_size.CLASS
-        
-        if ind != -1:
-            class_size = self.get_class_byte_size(children[ind + 1])
-            if class_size == -1:
-                self.msgs_db.insert_error(line, f'La clase {children[ind + 1]} no ha sido declarada.')
-                return False
-            byte_size += class_size
            
         table_item = TableItem(
             lex=children[1],
@@ -124,7 +117,7 @@ class TableOperations:
     def insert_formal(self, ctx: YaplParser.FormalContext) -> bool:
         children, line = self.get_ctx_attr(ctx)
         
-        print(f'Scope: {self.symbol_table.tables[self.symbol_table.scopes[-2]].name}, Lex: {children[0]}, Type: {children[2]}')
+        # print(f'Scope: {self.symbol_table.tables[self.symbol_table.scopes[-2]].name}, Lex: {children[0]}, Type: {children[2]}')
         
         byte_size = 0
         
@@ -135,10 +128,8 @@ class TableOperations:
         elif children[2].lower() == global_constants.basic_types.STRING.lower():
             byte_size = global_constants.byte_size.STRING
         
-        table_index = self.symbol_table.get_table_index(self.symbol_table.tables[self.symbol_table.scopes[-2]].name)
-        lex_name = self.symbol_table.tables[self.symbol_table.actual_scope].name
-        
-        self.symbol_table.add_byte_size(table_index, lex_name, byte_size)
+        class_name = self.symbol_table.tables[self.symbol_table.scopes[1]].name
+        self.symbol_table.add_class_size(class_name, byte_size)
         
         
         table_item = TableItem(
@@ -157,6 +148,7 @@ class TableOperations:
     def insert_expr(self, ctx: YaplParser.ExprContext) -> bool:
         children, line = self.get_ctx_attr(ctx)
         
+        
         if children[0].lower() == global_constants.string_cons.LET:
             param_num = len(list(filter(lambda x: x == global_constants.string_cons.TYPE_DELIMITER, children[2:-1])))
             table_item = TableItem(
@@ -166,29 +158,23 @@ class TableOperations:
                 sem_kind=global_constants.sem_kinds.EXPR,
                 param_num=param_num
             )
-            inserted = self.symbol_table.insert(table_item)
-            
-            if inserted:
-                self.symbol_table.push_scope(global_constants.string_cons.LET + str(self.symbol_table.lets_counter))
-                self.symbol_table.lets_counter += 1
-                
-                type_delimiter_indexes = []
-                for i in range(len(children)):
-                    if children[i] == global_constants.string_cons.TYPE_DELIMITER:
-                        type_delimiter_indexes.append(i)
-                        
-                for i in type_delimiter_indexes:
-                    table_item = TableItem(
-                        lex=children[i - 1],
-                        token=ctx.children[i - 1].symbol.type,
-                        typ=children[i + 1],
-                        line=line,
-                        sem_kind=global_constants.sem_kinds.ATTR,
-                        param_method=constants.param_methods.REF
-                    )
-                    self.symbol_table.insert(table_item)
-                
-                self.symbol_table.pop_scope()
+
+            return self.symbol_table.insert(table_item)
+        
     
-            return inserted
     
+    def insert_let_param(self, ctx: YaplParser.ExprContext, i: int) -> bool:
+        children, line = self.get_ctx_attr(ctx)
+        table_item = TableItem(
+            lex=children[i - 1],
+            token=ctx.children[i - 1].symbol.type,
+            typ=children[i + 1],
+            line=line,
+            sem_kind=global_constants.sem_kinds.ATTR,
+            param_method=constants.param_methods.REF,
+            byte_size=self.symbol_table.get_byte_size(children[i + 1])
+        )
+        
+        class_name = self.symbol_table.tables[self.symbol_table.scopes[1]].name
+        self.symbol_table.add_class_size(class_name, table_item.byte_size)
+        return self.symbol_table.insert(table_item)

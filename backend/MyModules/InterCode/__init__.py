@@ -1,1 +1,1 @@
-from .Intercode import InterCode
+from .Intercode import InterCode, InterCodeItem

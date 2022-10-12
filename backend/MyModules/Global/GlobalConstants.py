@@ -1,7 +1,3 @@
-
-from lib2to3.pgen2.token import STRING
-
-
 class PhaseError:
     LEXIC = 'léxico'
     SINTACTIC = 'sintáctico'
@@ -64,13 +60,26 @@ class BasicTypes:
     STRING = 'String'
     IO = 'IO'
     SELF_TYPE = 'SELF_TYPE'
-    
+
+
 class ByteSize:
     INT = 4
     STRING = 50
     BOOL = 1
     CLASS = 100
 
+class OperatorConstants:
+    token_types = TokenTypes()
+    
+    op_dict = {
+        token_types.ADD: '+',
+        token_types.SUB: '-',
+        token_types.MULTIPLY: '*',
+        token_types.DIVIDE: '/',
+        token_types.LESS_THAN: '<',
+        token_types.LESS_EQUAL: '<=',
+        token_types.EQUAL: '==',
+    }
 class SemanticKinds:
     CLASS = 'class'
     ATTR = 'attr'
@@ -109,6 +118,10 @@ class GlobalConstants:
     results_types = ResultsTypes()
     sem_kinds = SemanticKinds()
     string_cons = StringConstants()
+    op_dict = OperatorConstants().op_dict
     token_types = TokenTypes()
+    
+    BASIC_TOKENS = [token_types.INTEGER, token_types.STRING, token_types.TRUE, token_types.FALSE]
+    COND_TOKENS = [token_types.IF, token_types.WHILE]
     
 global_constants = GlobalConstants()

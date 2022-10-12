@@ -8,6 +8,7 @@ else:
 
 from SymbolTable import SymbolTable, TableOperations
 from ConsoleMessages import MessagesDB
+from .YaplConstants import YaplConstants, constants
 
 from Global import global_constants
 
@@ -30,7 +31,7 @@ class YaplVisitor(ParseTreeVisitor):
     def visitProgram(self, ctx: YaplParser.ProgramContext):
         self.visitChildren(ctx)
         self.symbol_table.check_main()
-        self.symbol_table.update_mem_positions()
+        self.symbol_table.update_mem_position(0)
         print('Tablas de símbolos:\n %s.' % str(self.symbol_table))
 
     # Visit a parse tree produced by YaplParser#class.
@@ -41,7 +42,7 @@ class YaplVisitor(ParseTreeVisitor):
             line = (ctx.children[0].symbol.line, ctx.children[0].symbol.column)
             self.table_operations.insert_self(line)
             self.visitChildren(ctx)
-            print(f'{ctx.children[1].getText()}, {self.symbol_table.tables[self.symbol_table.actual_scope].name}')
+            #print(f'{ctx.children[1].getText()}, {self.symbol_table.tables[self.symbol_table.actual_scope].name}')
             actual_table = self.symbol_table.tables[self.symbol_table.actual_scope]
             byte_sizes = list(
                 map(lambda symbol: symbol.byte_size if symbol.typ != actual_table.name else 0, actual_table.items))
@@ -73,10 +74,31 @@ class YaplVisitor(ParseTreeVisitor):
     def visitExpr(self, ctx: YaplParser.ExprContext):
         if not ctx.children:
             return
+        
+        inserted = None
+        
         if ctx.children[0].getText().lower() == global_constants.string_cons.LET:
             inserted = self.table_operations.insert_expr(ctx)
             if inserted:
+                self.symbol_table.push_scope(global_constants.string_cons.LET + str(self.symbol_table.lets_counter))
+                self.symbol_table.lets_counter += 1
+                
+                children = list(map(lambda x: x.getText(), ctx.children))
+                
+                type_delimiter_indexes = []
+                for i in range(len(children)):
+                    if children[i] == global_constants.string_cons.TYPE_DELIMITER:
+                        type_delimiter_indexes.append(i)
+                        
+                for i in type_delimiter_indexes:
+                    self.table_operations.insert_let_param(ctx, i)
+            
+            
                 self.visitChildren(ctx)
+        
+                self.symbol_table.pop_scope()
+        
+        
 
 
 del YaplParser

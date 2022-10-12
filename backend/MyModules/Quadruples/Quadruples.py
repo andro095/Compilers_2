@@ -11,12 +11,12 @@ class Quadruple(BaseModel):
     Clase que representa un cuádruplo.
     """
     op: str
-    arg1: str
+    arg1: str | None = ''
     arg2: str | None = ''
     result: str | None = ''
     
     
-def make_quadruple(op: str, arg1: str, arg2: str | None = None, result: str | None = None) -> Quadruple:
+def make_quadruple(op: str, arg1: str | None = None, arg2: str | None = None, result: str | None = None) -> Quadruple:
     """ 
     Función que crea un cuádruplo.
     """

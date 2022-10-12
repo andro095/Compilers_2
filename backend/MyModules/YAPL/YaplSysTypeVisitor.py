@@ -116,8 +116,12 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
                 
         typs = []
         
-        if all(res):
+        if all(res) and len(ctx.children) < 2:
+            print(ctx.getText())
             typs = self.get_type(ctx)
+            
+            ctx.r_type = typs
+            
             return typs
         else:
             if ctx.children[0].getText().lower() == global_constants.string_cons.LET:
@@ -140,6 +144,7 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
                 self.symbol_table.exit_scope()
                 self.analized_lets += 1
                 
+            ctx.r_type = validation
             return validation
 
 

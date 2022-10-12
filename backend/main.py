@@ -14,7 +14,7 @@ import svgling
 sys.path.append('./MyModules')
 
 # Librerias Propias
-from YAPL import YaplLexer, YaplParser, YaplErrorListener, YaplVisitor, YaplSysTypeVisitor
+from YAPL import YaplLexer, YaplParser, YaplErrorListener, YaplVisitor, YaplSysTypeVisitor, YaplInterCodeVisitor
 from ConsoleMessages import MessagesDB
 from SymbolTable import SymbolTable
 from Global import global_constants
@@ -77,13 +77,15 @@ def execute_code(code: Code) -> dict:
     answer2 = YaplSysTypeVisitor().visit(tree)
     if answer2 == global_constants.results_types.CHECK_TYPE:
         msgs_db.insert_success("El análisis semantico fue exitoso.")
+        
+    intercode = YaplInterCodeVisitor().visit(tree)
 
                 
 
     messages = msgs_db.messages
-    intercode = ''
     
     del sym_table.symbol_table
+    sym_table.mem_reset()
     del msgs_db.messages
     del msgs_db.error_flag
         

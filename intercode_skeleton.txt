@@ -23,3 +23,14 @@ op:
             t4 = t1 * d
             t5 = t3 + t4
 
+id:
+
+    base:
+        tn = m[id_pos]
+    
+    ejemplo:
+        a
+
+        t1 = m[a_pos]
+        
+
