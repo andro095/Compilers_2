@@ -66,7 +66,7 @@ class TypeSystem:
                         return elem.typ
                     else: 
                         line = (ctx.start.line, ctx.start.column)
-                        self.msgs_db.insert_error(line, f'No se puede acceder a {ctx.children[1].getText()} de un método.')
+                        self.msgs_db.insert_error(line, f'No se declaró bien el método {ctx.children[0].getText()}.')
                         return global_constants.results_types.ERROR_TYPE
             else:
                 line = (ctx.start.line, ctx.start.column)

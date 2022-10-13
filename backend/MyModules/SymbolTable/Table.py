@@ -440,7 +440,7 @@ class SymbolTable(metaclass=MySingleton):
             if index != -1:
                 self.update_mem_position(index)
                 
-            if elem.sem_kind == global_constants.sem_kinds.ATTR or elem.sem_kind == global_constants.sem_kinds.PARAMETER:
+            if elem.sem_kind == global_constants.sem_kinds.ATTR or elem.sem_kind == global_constants.sem_kinds.PARAMETER or elem.sem_kind == global_constants.sem_kinds.OBJ:
                 elem.mem_pos = self.allocate_mem_pos(elem.byte_size)
     
     @property
@@ -460,6 +460,7 @@ class SymbolTable(metaclass=MySingleton):
         self.tables = [Table(name=constants.string_literals.GLOBAL)]
         self.scopes = [0]
         self.lets_counter = 0
+        self.objects_counter = 0
         
         self.add_basic_types()
 

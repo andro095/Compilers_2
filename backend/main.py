@@ -68,17 +68,29 @@ def execute_code(code: Code) -> dict:
     parser.removeErrorListeners()
     parser.addErrorListener(YaplErrorListener.INSTANCE)    
     tree = parser.program()
+    has_sintactic_errors = False
+    has_semantic_errors = False
+    has_insertion_errors = False
     if not msgs_db.error_flag:       
         msgs_db.insert_success('El  sintáctico fue exitoso.')
+    else:
+        has_sintactic_errors = True
     del msgs_db.error_flag
     YaplVisitor().visit(tree)
     if not msgs_db.error_flag:
         msgs_db.insert_success('La inserción de tipos fue exitosa.')
+    else:
+        has_insertion_errors = True
     answer2 = YaplSysTypeVisitor().visit(tree)
     if answer2 == global_constants.results_types.CHECK_TYPE:
         msgs_db.insert_success("El análisis semantico fue exitoso.")
-        
-    intercode = YaplInterCodeVisitor().visit(tree)
+    else:
+        has_semantic_errors = True
+    
+    intercode = ''
+    
+    if not has_sintactic_errors and not has_semantic_errors and not has_insertion_errors and not haslexer_errors:
+        intercode = YaplInterCodeVisitor().visit(tree)
 
                 
 

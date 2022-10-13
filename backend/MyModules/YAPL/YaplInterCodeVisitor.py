@@ -110,11 +110,12 @@ class YaplInterCodeVisitor(ParseTreeVisitor):
     def visitExpr(self, ctx:YaplParser.ExprContext):
         res = evaluate_terminal_children(ctx.children)
         
-        if all(res) and len(ctx.children) < 2:
+        if all(res) and len(ctx.children) < 3:
             return self.get_base_type(ctx)
         else:
             
-            # print(ctx.getText(), ':', ctx.r_type, '\n' ,dir(ctx))
+            if res[0] and ctx.children[0].symbol.type == global_constants.token_types.LET:
+                self.symbol_table.enter_scope(f'let{self.analized_lets}')
             
             if res[0] and ctx.children[0].symbol.type in global_constants.COND_TOKENS:
                 self.intercode.increase_tabs()
@@ -124,5 +125,9 @@ class YaplInterCodeVisitor(ParseTreeVisitor):
 
             if res[0] and ctx.children[0].symbol.type in global_constants.COND_TOKENS:
                 self.intercode.decrease_tabs()
+                
+            if res[0] and ctx.children[0].symbol.type == global_constants.token_types.LET:
+                self.symbol_table.exit_scope()
+                self.analized_lets += 1
             
             return self.intercode.evaluate_expr(ctx, intercodes, res)

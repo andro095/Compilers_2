@@ -116,8 +116,7 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
                 
         typs = []
         
-        if all(res) and len(ctx.children) < 2:
-            print(ctx.getText())
+        if all(res) and len(ctx.children) < 3:
             typs = self.get_type(ctx)
             
             ctx.r_type = typs

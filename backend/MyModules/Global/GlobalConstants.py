@@ -86,6 +86,7 @@ class SemanticKinds:
     METHOD = 'method'
     PARAMETER = 'parameter'
     EXPR = 'expr'
+    OBJ = 'obj'
     
     KIND_TABLE_ERROR = {
         ATTR: 'Variable',

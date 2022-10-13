@@ -6,9 +6,6 @@ from antlr4 import ParserRuleContext
 from ConsoleMessages import MessagesDB
 from Global import global_constants
 
-
-#TODO: Actualizar el tamaño de los let
-#TODO: Agregar procedimientos a la tabla de simbolos
 class TableOperations:
     def __init__(self) -> None:
         self.symbol_table = SymbolTable()
@@ -178,3 +175,30 @@ class TableOperations:
         class_name = self.symbol_table.tables[self.symbol_table.scopes[1]].name
         self.symbol_table.add_class_size(class_name, table_item.byte_size)
         return self.symbol_table.insert(table_item)
+    
+    def insert_obj(self, ctx: YaplParser.ExprContext) -> bool:
+        children, line = self.get_ctx_attr(ctx)
+        
+        exists_type = self.symbol_table.exists_in_table(0, children[1])
+        
+        if exists_type:        
+            table_item = TableItem(
+                lex=f'obj{self.symbol_table.objects_counter}',
+                token=ctx.children[1].symbol.type,
+                typ=children[1],
+                line=line,
+                sem_kind=global_constants.sem_kinds.OBJ,
+                param_method=constants.param_methods.REF,
+                byte_size=self.symbol_table.get_byte_size(children[1])
+            )
+            
+            self.symbol_table.objects_counter += 1
+            
+            class_name = self.symbol_table.tables[self.symbol_table.scopes[1]].name
+            self.symbol_table.add_class_size(class_name, table_item.byte_size)
+            
+            return self.symbol_table.insert(table_item)
+        else:
+            self.msgs_db.insert_error(line, f'El tipo {children[1]} no existe', global_constants.phase_error.SEMANTIC)
+            
+            return False

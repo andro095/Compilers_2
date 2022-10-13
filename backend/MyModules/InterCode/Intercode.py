@@ -1,5 +1,3 @@
-from ast import operator
-from YAPL.YaplLexer import YaplLexer
 from pydantic import BaseModel
 
 from Quadruples import Quadruples, make_quadruple
@@ -16,10 +14,10 @@ class InterCode:
         self.__quadruples = Quadruples()
         self.symbol_table = SymbolTable()
         self.temps = 0
-        self.while_count = 0
         self.let_count = 0
         self.tabs_counter = 1
         self.goto_labels_counter = 0
+        self.object_counter = 0
         
         self.rules ={
             (global_constants.token_types.ID, global_constants.token_types.ASIGN): self.assign,
@@ -29,7 +27,7 @@ class InterCode:
             (global_constants.token_types.IF, global_constants.sem_kinds.EXPR): self.if_expr,
             (global_constants.token_types.WHILE, global_constants.sem_kinds.EXPR): self.while_expr,
             (global_constants.token_types.LCURLY, global_constants.sem_kinds.EXPR): self.block,
-            (global_constants.token_types.LET, global_constants.token_types.ID): self.dummy,
+            (global_constants.token_types.LET, global_constants.token_types.ID): self.let_expr,
             (global_constants.token_types.ISVOID, global_constants.sem_kinds.EXPR): self.is_void,
             (global_constants.sem_kinds.EXPR, global_constants.token_types.ADD): self.op,
             (global_constants.sem_kinds.EXPR, global_constants.token_types.SUB): self.op,
@@ -62,21 +60,16 @@ class InterCode:
         inter_code_item = InterCodeItem()
         
         if ctx.children[0].symbol.type in global_constants.BASIC_TOKENS:
-            self.add_quadruple(op='=', arg1=ctx.children[0].getText(), result=f't{self.temps}')
-            inter_code_item.dir = f't{self.temps}'
-            inter_code_item.code = self.tabs_counter * '\t' + f't{self.temps} = {ctx.children[0].getText()}'
-            self.temps += 1        
+            inter_code_item.dir = f'{ctx.children[0].getText()}'   
         elif ctx.children[0].symbol.type == global_constants.token_types.ID:
             id_item = self.symbol_table.get(ctx.children[0].getText())
-            self.add_quadruple(op='=', arg1=f'm[{id_item.mem_pos}]', result=f't{self.temps}')
-            inter_code_item.dir = f't{self.temps}'
-            inter_code_item.code = self.tabs_counter * '\t' + f't{self.temps} = m[{id_item.mem_pos}]'
-            self.temps += 1
+            inter_code_item.dir = f'm[{id_item.mem_pos}]'
         elif ctx.children[0].symbol.type == global_constants.token_types.NEW:
-            self.add_quadruple(op = '=', arg1='@', result=f't{self.temps}')
-            inter_code_item.dir = f't{self.temps}'
-            inter_code_item.code = self.tabs_counter * '\t' + f't{self.temps} = @'
-            self.temps += 1
+            ob_item = self.symbol_table.get(f'obj{self.object_counter}')
+            self.add_quadruple(op = 'allocate', arg1=f'{ob_item.byte_size}', arg2=f'<{ob_item.typ}>', result=f'm[{ob_item.mem_pos}]')
+            inter_code_item.dir = f'm[{ob_item.mem_pos}]'
+            inter_code_item.code = self.tabs_counter * '\t' + f'm[{ob_item.mem_pos}] = allocate {ob_item.byte_size} <{ob_item.typ}>'
+            self.object_counter += 1
         
         return inter_code_item    
         
@@ -101,6 +94,7 @@ class InterCode:
             else:
                 inter_code_item.code += '\n' + self.tabs_counter * "\t" + intercode.dir + ':' + intercode.code
             
+        inter_code_item.code += '\n' + (self.tabs_counter - 1) * "\t" + f'End {class_item.lex}' + '\n'
         self.add_quadruple(op=inter_code_item.dir)
         
         return inter_code_item
@@ -114,26 +108,27 @@ class InterCode:
         if feature_item.sem_kind == global_constants.sem_kinds.ATTR:
             if len(ctx.children) > 3:
                 inter_code_item = InterCodeItem(code='')
-                print(intercodes)
                 
                 for intercode in intercodes:
                     inter_code_item.code += intercode.code
                 
-                inter_code_item.code += '\n' + self.tabs_counter * "\t" + f'm[{feature_item.mem_pos}] = {intercodes[0].dir}'
+                inter_code_item.code += ('\n' if intercodes[0].code != '' else '') + self.tabs_counter * "\t" + f'm[{feature_item.mem_pos}] = {intercodes[0].dir}'
                 self.add_quadruple(op='=', arg1=intercodes[0].dir, result=f'm[{feature_item.mem_pos}]')
         else:
             
             inter_code_item = InterCodeItem(dir=f'{self.symbol_table.actual_scope_name}.{feature_item.lex}', code='')
             
             for intercode in intercodes:
-                inter_code_item.code += '\n' + intercode.code
+                if intercode.code != '':
+                    inter_code_item.code += '\n' + intercode.code
             
-            if intercodes[0].dir != '':    
-                inter_code_item.code += '\n' + self.tabs_counter * '\t' + 'return ' + intercodes[0].dir
+            if intercodes[0].dir != '' and intercodes[0].code == '':    
+                inter_code_item.code += '\n' + self.tabs_counter * '\t' + f't{self.temps} = ' + intercodes[0].dir
+                self.add_quadruple(op='=', arg1=intercodes[0].dir, result=f't{self.temps}')
+                self.temps += 1
             inter_code_item.code += '\n' + (self.tabs_counter - 1) * '\t' + 'End ' + inter_code_item.dir
             
             self.add_quadruple(op='End ' + inter_code_item.dir)
-            self.add_quadruple(op='return', arg1=intercodes[0].dir)
             self.add_quadruple(op=inter_code_item.dir)
             
             
@@ -152,8 +147,8 @@ class InterCode:
         self.add_quadruple(op=operator, arg1=intercodes[0].dir, arg2=intercodes[1].dir, result=f't{self.temps}')
         inter_code_item = InterCodeItem(dir=f't{self.temps}', code='')
         
-        inter_code_item.code += intercodes[0].code + '\n' + intercodes[1].code
-        inter_code_item.code += '\n' + self.tabs_counter * '\t' + f't{self.temps} = {intercodes[0].dir} {operator} {intercodes[1].dir}'
+        inter_code_item.code += intercodes[0].code + ('\n' if intercodes[0].code != '' else '') + intercodes[1].code
+        inter_code_item.code += ('\n' if intercodes[1].code != '' else '') + self.tabs_counter * '\t' + f't{self.temps} = {intercodes[0].dir} {operator} {intercodes[1].dir}'
         
         self.temps += 1
         
@@ -164,7 +159,7 @@ class InterCode:
         inter_code_item = InterCodeItem(dir=f't{self.temps}', code='')
         
         inter_code_item.code += intercodes[0].code
-        inter_code_item.code += '\n' + self.tabs_counter * '\t' + f't{self.temps} = {intercodes[0].dir} * -1'
+        inter_code_item.code += ('\n' if intercodes[0].code != '' else '')  + self.tabs_counter * '\t' + f't{self.temps} = {intercodes[0].dir} * -1'
         
         self.temps += 1
         
@@ -175,7 +170,7 @@ class InterCode:
         inter_code_item = InterCodeItem(dir=f't{self.temps}', code='')
         
         inter_code_item.code += intercodes[0].code
-        inter_code_item.code += '\n' + self.tabs_counter * '\t' + f't{self.temps} = not {intercodes[0].dir}'
+        inter_code_item.code += ('\n' if intercodes[0].code != '' else '')  + self.tabs_counter * '\t' + f't{self.temps} = not {intercodes[0].dir}'
         
         self.temps += 1
         
@@ -191,14 +186,14 @@ class InterCode:
         inter_code_item = InterCodeItem(dir=f'm[{expr_item.mem_pos}]', code='')
         
         inter_code_item.code += intercodes[0].code
-        inter_code_item.code += '\n' + self.tabs_counter * '\t' + f'm[{expr_item.mem_pos}] = {intercodes[0].dir}'
+        inter_code_item.code += ('\n' if intercodes[0].code != '' else '')  + self.tabs_counter * '\t' + f'm[{expr_item.mem_pos}] = {intercodes[0].dir}'
         
         return inter_code_item
     
     def is_void(self, ctx: YaplParser.ExprContext, intercodes: list[InterCodeItem]) -> InterCodeItem:
         inter_code_item = InterCodeItem(dir=f't{self.temps}', code=intercodes[0].code)
         
-        inter_code_item.code += '\n' + self.tabs_counter * '\t' + f't{self.temps} = {intercodes[0].dir} == null'
+        inter_code_item.code += ('\n' if intercodes[0].code != '' else '') + self.tabs_counter * '\t' + f't{self.temps} = {intercodes[0].dir} == null'
         self.add_quadruple(op='==', arg1=intercodes[0].dir, result=f't{self.temps}')
         
         self.temps += 1
@@ -211,16 +206,16 @@ class InterCode:
         intercodes[0].code = intercodes[0].code.replace(self.tabs_counter * '\t', (self.tabs_counter - 1) * '\t')
         
         inter_code_item.code += intercodes[0].code
-        inter_code_item.code += '\n' + self.tabs_counter * '\t' + f'ifFalse {intercodes[0].dir} goto L{self.goto_labels_counter}' + '\n'
+        inter_code_item.code += ('\n' if intercodes[0].code != '' else '') + self.tabs_counter * '\t' + f'ifFalse {intercodes[0].dir} goto L{self.goto_labels_counter}' + '\n'
         self.add_quadruple(op='ifFalse', arg1=intercodes[0].dir, arg2='goto' ,result=f'L{self.goto_labels_counter}')
         inter_code_item.code += intercodes[1].code
-        inter_code_item.code += '\n' + self.tabs_counter * '\t' + f'goto L{self.goto_labels_counter + 1}'
+        inter_code_item.code += ('\n' if intercodes[1].code != '' else '')  + self.tabs_counter * '\t' + f'goto L{self.goto_labels_counter + 1}'
         self.add_quadruple(op='goto', result=f'L{self.goto_labels_counter + 1}')
         inter_code_item.code += '\n' + self.tabs_counter * '\t' + f'L{self.goto_labels_counter}:' + '\n'
         self.add_quadruple(op=f'L{self.goto_labels_counter}:')
         inter_code_item.code += intercodes[2].code
         self.goto_labels_counter += 1
-        inter_code_item.code += '\n' + self.tabs_counter * '\t' + f'L{self.goto_labels_counter}:'
+        inter_code_item.code += ('\n' if intercodes[2].code != '' else '')  + self.tabs_counter * '\t' + f'L{self.goto_labels_counter}:'
         self.add_quadruple(op=f'L{self.goto_labels_counter}:')
         self.goto_labels_counter += 1
         
@@ -240,12 +235,12 @@ class InterCode:
         intercodes[0].code = intercodes[0].code.replace(self.tabs_counter * '\t', (self.tabs_counter - 1) * '\t')
         
         inter_code_item.code += intercodes[0].code
-        inter_code_item.code += '\n' + self.tabs_counter * '\t' + f'L{self.goto_labels_counter}:'
+        inter_code_item.code += ('\n' if intercodes[0].code != '' else '')  + self.tabs_counter * '\t' + f'L{self.goto_labels_counter}:'
         self.add_quadruple(op=f'L{self.goto_labels_counter}:')
         inter_code_item.code += '\n' + self.tabs_counter * '\t' + f'ifFalse {intercodes[0].dir} goto L{self.goto_labels_counter + 1}' + '\n'
         self.add_quadruple(op='ifFalse', arg1=intercodes[0].dir, arg2='goto' ,result=f'L{self.goto_labels_counter + 1}')
         inter_code_item.code += intercodes[1].code
-        inter_code_item.code += '\n' + self.tabs_counter * '\t' + f'goto L{self.goto_labels_counter}'
+        inter_code_item.code += ('\n' if intercodes[1].code != '' else '')  + self.tabs_counter * '\t' + f'goto L{self.goto_labels_counter}'
         self.add_quadruple(op='goto', result=f'L{self.goto_labels_counter}')
         self.goto_labels_counter += 1
         inter_code_item.code += '\n' + self.tabs_counter * '\t' + f'L{self.goto_labels_counter}:'
@@ -260,14 +255,14 @@ class InterCode:
         method_item = self.symbol_table.get(ctx.children[0].getText())
         
         for i, intercode in enumerate(intercodes):
-            inter_code_item.code += ('\n' if i != 0 else '') + intercode.code
+            inter_code_item.code += intercode.code + ('\n' if intercode.code != '' else '')
             
-        for intercode in intercodes:
-            inter_code_item.code += '\n' + self.tabs_counter * '\t' + 'param ' + intercode.dir
+        for i, intercode in enumerate(intercodes):
+            inter_code_item.code += ('\n' if i != 0 else '') + self.tabs_counter * '\t' + 'param ' + intercode.dir
             self.add_quadruple(op='param', result=intercode.dir)
                 
         
-        inter_code_item.code += '\n' + self.tabs_counter * '\t' + f't{self.temps} = call {self.symbol_table.tables[self.symbol_table.scopes[1]].name}.{method_item.lex}, {len(intercodes)}'
+        inter_code_item.code += ('\n' if len(intercodes) > 1 else '') + self.tabs_counter * '\t' + f't{self.temps} = call {self.symbol_table.tables[self.symbol_table.scopes[1]].name}.{method_item.lex}, {len(intercodes)}'
         
         self.add_quadruple(op='call', arg1=f'{self.symbol_table.tables[self.symbol_table.scopes[1]].name}.{method_item.lex}', arg2=len(intercodes), result=f't{self.temps}')
         
@@ -276,44 +271,72 @@ class InterCode:
         return inter_code_item
     
     def expr_point(self, ctx: YaplParser.ExprContext, intercodes: list[InterCodeItem]) -> InterCodeItem:
-        inter_code_item = InterCodeItem(dir=f't{self.temps}', code='')
+        inter_code_item = InterCodeItem(dir='', code='')
+        
+        inter_code_item.dir = f'{intercodes[0].dir}' if intercodes[0].code != '' else f't{self.temps}'
+        
+        my_dir = f'{intercodes[0].dir}'
+        
+        if intercodes[0].code == '':
+            my_dir = f't{self.temps}'
+            inter_code_item.code += self.tabs_counter * '\t' + f't{self.temps} = {intercodes[0].dir}' + '\n'
+            self.add_quadruple(op='=', arg1=intercodes[0].dir, result=f't{self.temps}')
+            self.temps += 1
         
         for i, intercode in enumerate(intercodes):
-            inter_code_item.code += ('\n' if i != 0 else '') + intercode.code
+            inter_code_item.code += intercode.code + ('\n' if intercode.code != '' else '')
             
         for i, intercode in enumerate(intercodes):
             if i != 0:
-                inter_code_item.code += '\n' + self.tabs_counter * '\t' + 'param ' + intercode.dir
+                inter_code_item.code += ('\n' if i != 1 else '') + self.tabs_counter * '\t' + 'param ' + intercode.dir
                 self.add_quadruple(op='param', result=intercode.dir)
             
-        inter_code_item.code += '\n' + self.tabs_counter * '\t' + f't{self.temps} = call {ctx.children[0].r_type}.{ctx.children[2].getText()}, {len(intercodes)}'
+            
+        inter_code_item.code += ('\n' if len(intercodes) > 1 else '') + self.tabs_counter * '\t' + f'{my_dir} = call {ctx.children[0].r_type}.{ctx.children[2].getText()}, {len(intercodes) - 1}'
         
-        self.add_quadruple(op='call', arg1=f'{ctx.children[0].r_type}.{ctx.children[2].getText()}', arg2=len(intercodes), result=f't{self.temps}')
+        self.add_quadruple(op='call', arg1=f'{ctx.children[0].r_type}.{ctx.children[2].getText()}', arg2=len(intercodes), result=f'{my_dir}')
         
-        self.temps += 1
         
         return inter_code_item
     
     def expr_arroba(self, ctx: YaplParser.ExprContext, intercodes: list[InterCodeItem]) -> InterCodeItem:
-        inter_code_item = InterCodeItem(dir=f't{self.temps}', code='')
+        inter_code_item = InterCodeItem(dir='', code='')
         
         type_expr = ctx.children[2].getText()
         
+        inter_code_item.dir = f'{intercodes[0].dir}' if intercodes[0].code != '' else f't{self.temps}'
+        
+        my_dir = f'{intercodes[0].dir}'
+        
+        if intercodes[0].code == '':
+            my_dir = f't{self.temps}'
+            inter_code_item.code += self.tabs_counter * '\t' + f't{self.temps} = {intercodes[0].dir}' + '\n'
+            self.add_quadruple(op='=', arg1=intercodes[0].dir, result=f't{self.temps}')
+            self.temps += 1
         
         for i, intercode in enumerate(intercodes):
-            inter_code_item.code += ('\n' if i != 0 else '') + intercode.code
+            inter_code_item.code += intercode.code + ('\n' if intercode.code != '' else '')
             
-        for intercode in intercodes:
-            inter_code_item.code += '\n' + self.tabs_counter * '\t' + 'param ' + intercode.dir
-            self.add_quadruple(op='param', result=intercode.dir)
+        for i, intercode in enumerate(intercodes):
+            if i != 0:
+                inter_code_item.code += ('\n' if i != 1 else '') + self.tabs_counter * '\t' + 'param ' + intercode.dir
+                self.add_quadruple(op='param', result=intercode.dir)
             
-        inter_code_item.code += '\n' + self.tabs_counter * '\t' + f't{self.temps} = call {type_expr}.{ctx.children[4].getText()}, {len(intercodes)}'
+            
+        inter_code_item.code += ('\n' if len(intercodes) > 1 else '') + self.tabs_counter * '\t' + f'{my_dir} = call {type_expr}.{ctx.children[4].getText()}, {len(intercodes) - 1}'
         
-        self.add_quadruple(op='call', arg1=f'{type_expr}.{ctx.children[4].getText()}', arg2=len(intercodes), result=f't{self.temps}')
+        self.add_quadruple(op='call', arg1=f'{type_expr}.{ctx.children[4].getText()}', arg2=len(intercodes), result=f'{my_dir}')
         
-        self.temps += 1
         
         return inter_code_item
         
         
+    def let_expr(self, ctx: YaplParser.ExprContext, intercodes: list[InterCodeItem]) -> InterCodeItem: 
+        inter_code_item = InterCodeItem(dir=f'{intercodes[-1].dir}')
         
+        
+        for i, intercode in enumerate(intercodes):
+            if intercode.code != '':
+                inter_code_item.code += intercode.code + ('\n' if i != len(intercodes) - 1 else '')
+                
+        return inter_code_item

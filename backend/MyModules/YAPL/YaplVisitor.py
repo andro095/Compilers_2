@@ -9,6 +9,7 @@ else:
 from SymbolTable import SymbolTable, TableOperations
 from ConsoleMessages import MessagesDB
 from .YaplConstants import YaplConstants, constants
+from .YaplUtils import is_terminal_node
 
 from Global import global_constants
 
@@ -97,7 +98,15 @@ class YaplVisitor(ParseTreeVisitor):
                 self.visitChildren(ctx)
         
                 self.symbol_table.pop_scope()
-        
+                
+        # elif is_terminal_node(ctx.children[0]) and ctx.children[0].symbol.type == global_constants.token_types.LCURLY:
+        #     self.visitChildren(ctx)
+            
+        elif is_terminal_node(ctx.children[0]) and ctx.children[0].symbol.type == global_constants.token_types.NEW:
+            self.table_operations.insert_obj(ctx)
+            
+        else:
+            self.visitChildren(ctx)
         
 
 
