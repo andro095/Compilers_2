@@ -93,6 +93,10 @@ class TypeSystem:
         if self.sym_table.exists(ctx.children[0].getText()):
             feature_item = self.sym_table.get(ctx.children[0].getText())
             if feature_item.sem_kind == global_constants.sem_kinds.ATTR:
+                
+                if ctx.children[2].getText() == global_constants.basic_types.SELF_TYPE:
+                    return global_constants.results_types.CHECK_TYPE
+                
                 if not self.sym_table.exists(ctx.children[2].getText()):
                     self.msgs_db.insert_error(line, f'El tipo {ctx.children[2].getText()} no existe.')
                     return global_constants.results_types.ERROR_TYPE
@@ -317,6 +321,10 @@ class TypeSystem:
             table_index = self.sym_table.get_table_index(types[0])
             id_exists = self.sym_table.exists_in_table(table_index, ctx.children[2].getText())
             
+            if len(ctx.children) < 5:
+                self.msgs_db.insert_error(line, 'No se declaro bien la llamada al método.')
+                return global_constants.results_types.ERROR_TYPE
+            
             if id_exists:
                 elem: TableItem = self.sym_table.get_from_table(table_index, ctx.children[2].getText())
                 
@@ -374,6 +382,10 @@ class TypeSystem:
             
             table_index = self.sym_table.get_table_index(ctx.children[2].getText())
             id_exists = self.sym_table.exists_in_table(table_index, ctx.children[4].getText())
+            
+            if len(ctx.children) < 7:
+                self.msgs_db.insert_error(line, 'No se declaro bien la llamada al método.')
+                return global_constants.results_types.ERROR_TYPE
             
             if id_exists:
                 elem: TableItem = self.sym_table.get_from_table(table_index, ctx.children[4].getText())
