@@ -319,15 +319,16 @@ class InterCode:
         
         type_expr = ctx.children[2].getText()
         
-        inter_code_item.dir = f'{intercodes[0].dir}' if intercodes[0].code != '' else f't{self.temps}'
         
         my_dir = f'{intercodes[0].dir}'
         
         if intercodes[0].code == '':
-            my_dir = f't{self.temps}'
             inter_code_item.code += self.tabs_counter * '\t' + f't{self.temps} = {intercodes[0].dir}' + '\n'
             self.add_quadruple(op='=', arg1=intercodes[0].dir, result=f't{self.temps}')
+            my_dir = f't{self.temps}'
             self.temps += 1
+        
+        inter_code_item.dir = my_dir
         
         for i, intercode in enumerate(intercodes):
             inter_code_item.code += intercode.code + ('\n' if intercode.code != '' else '')
