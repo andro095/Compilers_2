@@ -296,7 +296,7 @@ class InterCode:
             my_dir = f't{self.temps}'
             self.temps += 1
         
-        inter_code_item.dir = f'{intercodes[0].dir}' if intercodes[0].code != '' else f't{self.temps}'
+        inter_code_item.dir = my_dir
         
         for i, intercode in enumerate(intercodes):
             inter_code_item.code += intercode.code + ('\n' if intercode.code != '' else '')
