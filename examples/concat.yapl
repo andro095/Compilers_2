@@ -2,14 +2,11 @@ class Main {
     x: String;
     io_enter: IO;
 
-    main() : IO {
+    main() : Int {
         {
-            x <- (io_enter.in_string());
-            x <- (x.concat("Hola"));
-            x <- (x.concat("Hola2"));
-            x <- (x.concat("Hola3"));
-            io_enter.out_string(x);
-
+            x <- io_enter.in_string();
+            x <- x.concat("Hola").concat("Hola2").concat(new String);
+            io_enter <- io_enter.out_string(x);
         }
     };
 };

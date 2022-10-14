@@ -22,6 +22,10 @@ class TableItem(BaseModel):
 class Table(BaseModel):
     name: str
     items: list[TableItem] = []
+    
+class MemoryCounters(BaseModel):
+    heap: int = 0
+    stack: int = 0
         
         
 class SymbolTable(metaclass=MySingleton):
@@ -32,6 +36,8 @@ class SymbolTable(metaclass=MySingleton):
         self.lets_counter = 0
         self.objects_counter = 0
         self.mem_counter = 0
+        self.heap_counter = 0
+        self.class_memories = {}
         
         self.add_basic_types()
         
@@ -145,6 +151,8 @@ class SymbolTable(metaclass=MySingleton):
         )
         self.insert(string_i)
         
+        self.class_memories[global_constants.basic_types.STRING] = MemoryCounters()
+        
         self.push_scope(global_constants.basic_types.STRING)
         
         length_m_i = TableItem(
@@ -231,7 +239,7 @@ class SymbolTable(metaclass=MySingleton):
         
         self.pop_scope()
     
-    def add_io(self):        
+    def add_io(self): 
         io_i = TableItem(
             lex=global_constants.basic_types.IO,
             token=global_constants.token_types.TYPE,
@@ -241,6 +249,8 @@ class SymbolTable(metaclass=MySingleton):
             byte_size=global_constants.byte_size.CLASS + global_constants.byte_size.INT + global_constants.byte_size.STRING
         )
         self.insert(io_i)
+        
+        self.class_memories[global_constants.basic_types.IO] = MemoryCounters()
         
         self.push_scope(global_constants.basic_types.IO)
         
@@ -330,7 +340,6 @@ class SymbolTable(metaclass=MySingleton):
                 
         self.pop_scope()
         
-    
     def add_basic_types(self):
         self.add_int()
         self.add_bool()
@@ -357,8 +366,7 @@ class SymbolTable(metaclass=MySingleton):
                 return i
         
         return -1
-    
-    
+       
     def insert(self, item: TableItem) -> bool:
         if (item.lex, item.sem_kind) in map(lambda x: (x.lex, x.sem_kind), self.tables[self.actual_scope].items):
             self.msgs_db.insert_error(item.line, global_constants.sem_kinds.KIND_TABLE_ERROR[item.sem_kind] + ' ' + item.lex + ' ya declarada ')
@@ -366,7 +374,6 @@ class SymbolTable(metaclass=MySingleton):
         else:
             self.tables[self.actual_scope].items.append(item)
             return True
-
 
     def get(self, name):
         for scope in reversed(self.scopes):
@@ -429,19 +436,30 @@ class SymbolTable(metaclass=MySingleton):
                 return True
         return False
     
-    def allocate_mem_pos(self, mem_size: int) -> int:
-        self.mem_counter += mem_size
-        return self.mem_counter - mem_size
+    def allocate_mem_pos(self, mem_size: int, mem_base: int, actual_class: str) -> int:
+        mem_pos = 0
+        if mem_base == global_constants.base_memory.HEAP:
+            mem_pos = self.class_memories[actual_class].heap
+            self.class_memories[actual_class].heap += mem_size
+        else:
+            mem_pos = self.class_memories[actual_class].stack
+            self.class_memories[actual_class].stack += mem_size
         
-    def update_mem_position(self, index: int):
+        return mem_pos
+        
+    def update_mem_position(self, index: int, actual_class: str | None = None):
         for elem in self.tables[index].items:
-            index = self.get_table_index(elem.lex)
+            if index == 0:
+                actual_class = elem.lex
+            #print('Scope:', self.actual_scope_name, 'scopes: ', self.scopes)
+            ind = self.get_table_index(elem.lex)
             
-            if index != -1:
-                self.update_mem_position(index)
+            if ind != -1:
+                self.update_mem_position(ind, actual_class)
                 
             if elem.sem_kind == global_constants.sem_kinds.ATTR or elem.sem_kind == global_constants.sem_kinds.PARAMETER or elem.sem_kind == global_constants.sem_kinds.OBJ:
-                elem.mem_pos = self.allocate_mem_pos(elem.byte_size)
+                #print('Updating mem pos for', elem.lex, 'in', actual_class)
+                elem.mem_pos = self.allocate_mem_pos(elem.byte_size, elem.mem_base, actual_class)
     
     @property
     def actual_scope(self):

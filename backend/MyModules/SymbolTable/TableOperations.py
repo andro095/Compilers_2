@@ -4,6 +4,7 @@ from YAPL import YaplParser
 from utils import indx
 from antlr4 import ParserRuleContext
 from ConsoleMessages import MessagesDB
+from .Table import MemoryCounters
 from Global import global_constants
 
 class TableOperations:
@@ -66,7 +67,12 @@ class TableOperations:
             byte_size=byte_size        
         )
         
-        return self.symbol_table.insert(table_item)
+        inserted = self.symbol_table.insert(table_item)
+        
+        if inserted:
+            self.symbol_table.class_memories[children[1]] = MemoryCounters()
+        
+        return inserted
     
     def insert_feature(self, ctx: YaplParser.FeatureContext) -> bool:
         children, line = self.get_ctx_attr(ctx)
@@ -137,7 +143,7 @@ class TableOperations:
             sem_kind=global_constants.sem_kinds.PARAMETER,
             param_method=constants.param_methods.REF,
             byte_size=byte_size,
-            mem_base=global_constants.base_memory.HEAP
+            mem_base=global_constants.base_memory.STACK
         )
         
         return self.symbol_table.insert(table_item)
@@ -169,6 +175,7 @@ class TableOperations:
             line=line,
             sem_kind=global_constants.sem_kinds.ATTR,
             param_method=constants.param_methods.REF,
+            mem_base=global_constants.base_memory.STACK,
             byte_size=self.symbol_table.get_byte_size(children[i + 1])
         )
         
@@ -189,6 +196,7 @@ class TableOperations:
                 line=line,
                 sem_kind=global_constants.sem_kinds.OBJ,
                 param_method=constants.param_methods.REF,
+                mem_base=global_constants.base_memory.HEAP,
                 byte_size=self.symbol_table.get_byte_size(children[1])
             )
             

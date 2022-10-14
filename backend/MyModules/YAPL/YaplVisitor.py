@@ -33,7 +33,7 @@ class YaplVisitor(ParseTreeVisitor):
         self.visitChildren(ctx)
         self.symbol_table.check_main()
         self.symbol_table.update_mem_position(0)
-        print('Tablas de símbolos:\n %s.' % str(self.symbol_table))
+        print('Tablas de símbolos: %s.' % str(self.symbol_table))
 
     # Visit a parse tree produced by YaplParser#class.
     def visitClass(self, ctx: YaplParser.ClassContext):
@@ -98,9 +98,6 @@ class YaplVisitor(ParseTreeVisitor):
                 self.visitChildren(ctx)
         
                 self.symbol_table.pop_scope()
-                
-        # elif is_terminal_node(ctx.children[0]) and ctx.children[0].symbol.type == global_constants.token_types.LCURLY:
-        #     self.visitChildren(ctx)
             
         elif is_terminal_node(ctx.children[0]) and ctx.children[0].symbol.type == global_constants.token_types.NEW:
             self.table_operations.insert_obj(ctx)

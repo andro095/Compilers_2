@@ -63,12 +63,16 @@ class InterCode:
             inter_code_item.dir = f'{ctx.children[0].getText()}'   
         elif ctx.children[0].symbol.type == global_constants.token_types.ID:
             id_item = self.symbol_table.get(ctx.children[0].getText())
-            inter_code_item.dir = f'm[{id_item.mem_pos}]'
+            class_name = self.symbol_table.tables[self.symbol_table.scopes[1]].name
+            heap_or_stack = 'h' if id_item.mem_base == global_constants.base_memory.HEAP else 's'
+            inter_code_item.dir = f'{class_name}_{heap_or_stack}[{id_item.mem_pos}]'
         elif ctx.children[0].symbol.type == global_constants.token_types.NEW:
             ob_item = self.symbol_table.get(f'obj{self.object_counter}')
-            self.add_quadruple(op = 'allocate', arg1=f'{ob_item.byte_size}', arg2=f'<{ob_item.typ}>', result=f'm[{ob_item.mem_pos}]')
-            inter_code_item.dir = f'm[{ob_item.mem_pos}]'
-            inter_code_item.code = self.tabs_counter * '\t' + f'm[{ob_item.mem_pos}] = allocate {ob_item.byte_size} <{ob_item.typ}>'
+            class_name = self.symbol_table.tables[self.symbol_table.scopes[1]].name
+            heap_or_stack = 'h' if ob_item.mem_base == global_constants.base_memory.HEAP else 's'
+            self.add_quadruple(op = 'allocate', arg1=f'{ob_item.byte_size}', arg2=f'<{ob_item.typ}>', result=f'{class_name}_{heap_or_stack}[{ob_item.mem_pos}]')
+            inter_code_item.dir = f'{class_name}_{heap_or_stack}[{ob_item.mem_pos}]'
+            inter_code_item.code = self.tabs_counter * '\t' + f'{class_name}_{heap_or_stack}[{ob_item.mem_pos}] = allocate {ob_item.byte_size} <{ob_item.typ}>'
             self.object_counter += 1
         
         return inter_code_item    
@@ -111,9 +115,12 @@ class InterCode:
                 
                 for intercode in intercodes:
                     inter_code_item.code += intercode.code
+                    
+                class_name = self.symbol_table.tables[self.symbol_table.scopes[1]].name
+                heap_or_stack = 'h' if feature_item.mem_base == global_constants.base_memory.HEAP else 's'
                 
-                inter_code_item.code += ('\n' if intercodes[0].code != '' else '') + self.tabs_counter * "\t" + f'm[{feature_item.mem_pos}] = {intercodes[0].dir}'
-                self.add_quadruple(op='=', arg1=intercodes[0].dir, result=f'm[{feature_item.mem_pos}]')
+                inter_code_item.code += ('\n' if intercodes[0].code != '' else '') + self.tabs_counter * "\t" + f'{class_name}_{heap_or_stack}[{feature_item.mem_pos}] = {intercodes[0].dir}'
+                self.add_quadruple(op='=', arg1=intercodes[0].dir, result=f'{class_name}_{heap_or_stack}[{feature_item.mem_pos}]')
         else:
             
             inter_code_item = InterCodeItem(dir=f'{self.symbol_table.actual_scope_name}.{feature_item.lex}', code='')
@@ -122,10 +129,9 @@ class InterCode:
                 if intercode.code != '':
                     inter_code_item.code += '\n' + intercode.code
             
-            if intercodes[0].dir != '' and intercodes[0].code == '':    
-                inter_code_item.code += '\n' + self.tabs_counter * '\t' + f't{self.temps} = ' + intercodes[0].dir
-                self.add_quadruple(op='=', arg1=intercodes[0].dir, result=f't{self.temps}')
-                self.temps += 1
+            if intercodes[0].dir != '':    
+                inter_code_item.code += '\n' + self.tabs_counter * '\t' + 'return ' + intercodes[0].dir
+                self.add_quadruple(op='return', arg1=intercodes[0].dir)
             inter_code_item.code += '\n' + (self.tabs_counter - 1) * '\t' + 'End ' + inter_code_item.dir
             
             self.add_quadruple(op='End ' + inter_code_item.dir)
@@ -182,11 +188,14 @@ class InterCode:
     def assign(self, ctx: YaplParser.ExprContext, intercodes: list[InterCodeItem]) -> InterCodeItem:
         expr_item = self.symbol_table.get(ctx.children[0].getText())
         
-        self.add_quadruple(op='=', arg1=intercodes[0].dir, result=f'm[{expr_item.mem_pos}]')
-        inter_code_item = InterCodeItem(dir=f'm[{expr_item.mem_pos}]', code='')
+        class_name = self.symbol_table.tables[self.symbol_table.scopes[1]].name
+        heap_or_stack = 'h' if expr_item.mem_base == global_constants.base_memory.HEAP else 's'
+        
+        self.add_quadruple(op='=', arg1=intercodes[0].dir, result=f'{class_name}_{heap_or_stack}[{expr_item.mem_pos}]')
+        inter_code_item = InterCodeItem(dir=f'{class_name}_{heap_or_stack}[{expr_item.mem_pos}]', code='')
         
         inter_code_item.code += intercodes[0].code
-        inter_code_item.code += ('\n' if intercodes[0].code != '' else '')  + self.tabs_counter * '\t' + f'm[{expr_item.mem_pos}] = {intercodes[0].dir}'
+        inter_code_item.code += ('\n' if intercodes[0].code != '' else '')  + self.tabs_counter * '\t' + f'{class_name}_{heap_or_stack}[{expr_item.mem_pos}] = {intercodes[0].dir}'
         
         return inter_code_item
     
@@ -225,7 +234,12 @@ class InterCode:
         inter_code_item = InterCodeItem(dir=intercodes[-1].dir, code='')
         
         for i, intercode in enumerate(intercodes):
-            inter_code_item.code += ('\n' if i != 0 else '') + intercode.code
+            if intercode.code != '':
+                inter_code_item.code += ('\n' if i != 0 else '') + intercode.code
+            
+        if intercodes[-1].code == '':
+            inter_code_item.code += '\n' + self.tabs_counter * "\t" + f't{self.temps} = {intercodes[-1].dir}'
+            self.temps += 1
         
         return inter_code_item
     
@@ -262,7 +276,7 @@ class InterCode:
             self.add_quadruple(op='param', result=intercode.dir)
                 
         
-        inter_code_item.code += ('\n' if len(intercodes) > 1 else '') + self.tabs_counter * '\t' + f't{self.temps} = call {self.symbol_table.tables[self.symbol_table.scopes[1]].name}.{method_item.lex}, {len(intercodes)}'
+        inter_code_item.code += ('\n' if len(intercodes) > 0 else '') + self.tabs_counter * '\t' + f't{self.temps} = call {self.symbol_table.tables[self.symbol_table.scopes[1]].name}.{method_item.lex}, {len(intercodes)}'
         
         self.add_quadruple(op='call', arg1=f'{self.symbol_table.tables[self.symbol_table.scopes[1]].name}.{method_item.lex}', arg2=len(intercodes), result=f't{self.temps}')
         
@@ -273,15 +287,16 @@ class InterCode:
     def expr_point(self, ctx: YaplParser.ExprContext, intercodes: list[InterCodeItem]) -> InterCodeItem:
         inter_code_item = InterCodeItem(dir='', code='')
         
-        inter_code_item.dir = f'{intercodes[0].dir}' if intercodes[0].code != '' else f't{self.temps}'
         
         my_dir = f'{intercodes[0].dir}'
         
         if intercodes[0].code == '':
-            my_dir = f't{self.temps}'
             inter_code_item.code += self.tabs_counter * '\t' + f't{self.temps} = {intercodes[0].dir}' + '\n'
             self.add_quadruple(op='=', arg1=intercodes[0].dir, result=f't{self.temps}')
+            my_dir = f't{self.temps}'
             self.temps += 1
+        
+        inter_code_item.dir = f'{intercodes[0].dir}' if intercodes[0].code != '' else f't{self.temps}'
         
         for i, intercode in enumerate(intercodes):
             inter_code_item.code += intercode.code + ('\n' if intercode.code != '' else '')
