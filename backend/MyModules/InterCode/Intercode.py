@@ -273,7 +273,7 @@ class InterCode:
             
         for i, intercode in enumerate(intercodes):
             inter_code_item.code += ('\n' if i != 0 else '') + self.tabs_counter * '\t' + 'param ' + intercode.dir
-            self.add_quadruple(op='param', result=intercode.dir)
+            self.add_quadruple(op='param', arg1=intercode.dir)
                 
         
         inter_code_item.code += ('\n' if len(intercodes) > 0 else '') + self.tabs_counter * '\t' + f't{self.temps} = call {self.symbol_table.tables[self.symbol_table.scopes[1]].name}.{method_item.lex}, {len(intercodes)}'
@@ -304,7 +304,7 @@ class InterCode:
         for i, intercode in enumerate(intercodes):
             if i != 0:
                 inter_code_item.code += ('\n' if i != 1 else '') + self.tabs_counter * '\t' + 'param ' + intercode.dir
-                self.add_quadruple(op='param', result=intercode.dir)
+                self.add_quadruple(op='param', arg1=intercode.dir)
             
             
         inter_code_item.code += ('\n' if len(intercodes) > 1 else '') + self.tabs_counter * '\t' + f'{my_dir} = call {ctx.children[0].r_type}.{ctx.children[2].getText()}, {len(intercodes) - 1}'
@@ -336,7 +336,7 @@ class InterCode:
         for i, intercode in enumerate(intercodes):
             if i != 0:
                 inter_code_item.code += ('\n' if i != 1 else '') + self.tabs_counter * '\t' + 'param ' + intercode.dir
-                self.add_quadruple(op='param', result=intercode.dir)
+                self.add_quadruple(op='param', arg1=intercode.dir)
             
             
         inter_code_item.code += ('\n' if len(intercodes) > 1 else '') + self.tabs_counter * '\t' + f'{my_dir} = call {type_expr}.{ctx.children[4].getText()}, {len(intercodes) - 1}'

@@ -81,11 +81,14 @@ def execute_code(code: Code) -> dict:
         msgs_db.insert_success('La inserción de tipos fue exitosa.')
     else:
         has_insertion_errors = True
-    answer2 = YaplSysTypeVisitor().visit(tree)
-    if answer2 == global_constants.results_types.CHECK_TYPE and not msgs_db.has_semantic_errors:
-        msgs_db.insert_success("El análisis semantico fue exitoso.")
-    else:
-        has_semantic_errors = True
+    try:
+        answer2 = YaplSysTypeVisitor().visit(tree)
+        if answer2 == global_constants.results_types.CHECK_TYPE and not msgs_db.has_semantic_errors:
+            msgs_db.insert_success("El análisis semantico fue exitoso.")
+        else:
+            has_semantic_errors = True
+    except:
+        pass
     
     intercode = ''
     
