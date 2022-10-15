@@ -58,7 +58,7 @@ def execute_code(code: Code) -> dict:
             haslexer_errors = True
         actual_token = lexer.nextToken()
             
-    if not haslexer_errors:
+    if not haslexer_errors and not msgs_db.has_lexical_errors:
         msgs_db.insert_success('El análisis léxico fue exitoso.')
     
     lexer.reset()
@@ -71,7 +71,7 @@ def execute_code(code: Code) -> dict:
     has_sintactic_errors = False
     has_semantic_errors = False
     has_insertion_errors = False
-    if not msgs_db.error_flag:       
+    if not msgs_db.error_flag and not msgs_db.has_sintactic_errors:       
         msgs_db.insert_success('El  sintáctico fue exitoso.')
     else:
         has_sintactic_errors = True
@@ -82,17 +82,18 @@ def execute_code(code: Code) -> dict:
     else:
         has_insertion_errors = True
     answer2 = YaplSysTypeVisitor().visit(tree)
-    if answer2 == global_constants.results_types.CHECK_TYPE:
+    if answer2 == global_constants.results_types.CHECK_TYPE and not msgs_db.has_semantic_errors:
         msgs_db.insert_success("El análisis semantico fue exitoso.")
     else:
         has_semantic_errors = True
     
     intercode = ''
     
-    if not has_sintactic_errors and not has_semantic_errors and not has_insertion_errors and not haslexer_errors:
+    has_errors = has_sintactic_errors or has_semantic_errors or has_insertion_errors or haslexer_errors
+    has_errors2 = msgs_db.has_lexical_errors or msgs_db.has_sintactic_errors or msgs_db.has_semantic_errors
+    
+    if not has_errors and not has_errors2:
         intercode = YaplInterCodeVisitor().visit(tree)
-
-                
 
     messages = msgs_db.messages
     

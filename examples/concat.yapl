@@ -6,7 +6,7 @@ class Main {
         {
             x <- io_enter.in_string();
             x <- x.concat("Hola").concat("Hola2").concat(new String);
-            io_enter <- io_enter.out_string(x);
+            x.length();
         }
     };
 };

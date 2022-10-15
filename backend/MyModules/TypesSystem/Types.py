@@ -322,7 +322,7 @@ class TypeSystem:
             id_exists = self.sym_table.exists_in_table(table_index, ctx.children[2].getText())
             
             if len(ctx.children) < 5:
-                self.msgs_db.insert_error(line, 'No se declaro bien la llamada al método.')
+                self.msgs_db.insert_error(line, 'No se declaro bien la llamada al método.', 'sintáctico')
                 return global_constants.results_types.ERROR_TYPE
             
             if id_exists:
@@ -384,7 +384,7 @@ class TypeSystem:
             id_exists = self.sym_table.exists_in_table(table_index, ctx.children[4].getText())
             
             if len(ctx.children) < 7:
-                self.msgs_db.insert_error(line, 'No se declaro bien la llamada al método.')
+                self.msgs_db.insert_error(line, 'No se declaro bien la llamada al método.', 'sintáctico')
                 return global_constants.results_types.ERROR_TYPE
             
             if id_exists:

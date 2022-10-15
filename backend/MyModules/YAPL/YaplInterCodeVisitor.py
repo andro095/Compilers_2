@@ -49,14 +49,13 @@ class YaplInterCodeVisitor(ParseTreeVisitor):
         inter_code_item = self.intercode.evaluate_program(ctx, intercodes)
         
         
-        # self.intercode.print_quadruple()
+        self.intercode.print_quadruple()
         return inter_code_item.code  
         
     def visitClass(self, ctx:YaplParser.ClassContext):
         res = evaluate_terminal_children(ctx.children)
                 
         self.symbol_table.enter_scope(ctx.children[1].getText())
-        # print(f'Scope actual: {self.symbol_table.actual_scope_name}')
         
         self.intercode.increase_tabs()
         
