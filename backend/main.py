@@ -17,10 +17,12 @@ sys.path.append('./MyModules')
 from YAPL import YaplLexer, YaplParser, YaplErrorListener, YaplVisitor, YaplSysTypeVisitor, YaplInterCodeVisitor
 from ConsoleMessages import MessagesDB
 from SymbolTable import SymbolTable
+from Quadruples import Quadruples
 from Global import global_constants
 
 app = FastAPI()
 msgs_db = MessagesDB()
+quadruples = Quadruples()
 sym_table = SymbolTable()
 
 
@@ -81,15 +83,12 @@ def execute_code(code: Code) -> dict:
         msgs_db.insert_success('La inserción de tipos fue exitosa.')
     else:
         has_insertion_errors = True
-    try:
-        answer2 = YaplSysTypeVisitor().visit(tree)
-        if answer2 == global_constants.results_types.CHECK_TYPE and not msgs_db.has_semantic_errors:
-            msgs_db.insert_success("El análisis semantico fue exitoso.")
-        else:
-            has_semantic_errors = True
-    except:
-        pass
-    
+    answer2 = YaplSysTypeVisitor().visit(tree)
+    if answer2 == global_constants.results_types.CHECK_TYPE and not msgs_db.has_semantic_errors:
+        msgs_db.insert_success("El análisis semantico fue exitoso.")
+    else:
+        has_semantic_errors = True
+        
     intercode = ''
     
     has_errors = has_sintactic_errors or has_semantic_errors or has_insertion_errors or haslexer_errors
@@ -104,6 +103,7 @@ def execute_code(code: Code) -> dict:
     sym_table.mem_reset()
     del msgs_db.messages
     del msgs_db.error_flag
+    quadruples.reset()
         
     return { 'messages': messages, 'intercode': intercode }
 

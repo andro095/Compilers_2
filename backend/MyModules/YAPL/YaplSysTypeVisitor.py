@@ -8,7 +8,7 @@ else:
     
 from ConsoleMessages import MessagesDB
 
-from .YaplUtils import evaluate_terminal_children, some_error_type
+from .YaplUtils import evaluate_terminal_children, some_error_type, has_some_error_token
 from Global import global_constants
 
 from SymbolTable import SymbolTable, TableItem
@@ -108,6 +108,8 @@ class YaplSysTypeVisitor(ParseTreeVisitor):
     
     # Visit a parse tree produced by YaplParser#expr.
     def visitExpr(self, ctx:YaplParser.ExprContext):
+        if has_some_error_token(ctx):
+            return global_constants.results_types.ERROR_TYPE
         
         if not ctx.children:
             return global_constants.results_types.ERROR_TYPE

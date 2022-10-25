@@ -34,3 +34,6 @@ class Quadruples(metaclass=MySingleton):
         mystr = f'\nCuádruplos:\n{tab}'
         
         return mystr
+    
+    def reset(self):
+        self.__quadruples = []
