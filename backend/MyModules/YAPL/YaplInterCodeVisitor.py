@@ -42,6 +42,8 @@ class YaplInterCodeVisitor(ParseTreeVisitor):
         
         # print(f'Scope actual: {self.symbol_table.actual_scope_name}')
         
+        self.intercode.add_quadruple(op='goto', arg1='mainMain')
+        
         intercodes = self.visit_children(ctx, res)
         
         intercodes = list(filter(lambda x: x is not None, intercodes))
@@ -81,6 +83,9 @@ class YaplInterCodeVisitor(ParseTreeVisitor):
         
         if feature.sem_kind == global_constants.sem_kinds.METHOD:
             self.symbol_table.enter_scope(ctx.children[0].getText())
+            
+            self.intercode.add_quadruple(op='label', arg1=f'{self.symbol_table.actual_scope_name.lower()}{feature.lex.capitalize()}')
+            
             
             self.intercode.increase_tabs()
             

@@ -2,8 +2,9 @@ import PropTypes from 'prop-types';
 
 import { FileUpload } from 'primereact/fileupload';
 import { Button } from 'primereact/button';
+import { InputText } from 'primereact/inputtext';
 
-export const Options = ({ setProgram, onExecute }) => {
+export const Options = ({ setProgram, onCompile, onSave, fileName, setFileName, isCodeGenerated }) => {
 
     const onUploadFile = ({ files }) => {
         const reader = new FileReader();
@@ -31,17 +32,37 @@ export const Options = ({ setProgram, onExecute }) => {
                 chooseLabel='Seleccionar'
                 />
             <Button 
-                label='Ejecutar' 
-                className='p-button-rounded mt-4 p-button-success mb-4' 
-                onClick={ onExecute }
-            />               
+                label='Compilar' 
+                className='p-button-rounded mt-4 mb-5 p-button-success' 
+                onClick={ onCompile }
+            />
+
+            {
+                isCodeGenerated && <>
+                    <span className="p-float-label">
+                        <InputText 
+                                className='border-round-3xl'
+                                id="username" 
+                                value={fileName} 
+                                onChange={(e) => setFileName(e.target.value)} 
+                        />
+                        <label htmlFor="username">Nombre del archivo</label>
+                    </span>
+        
+                    <Button 
+                        label='Guardar código' 
+                        className='p-button-rounded mt-4 p-button-success mb-4' 
+                        onClick={ onSave }
+                    />               
+                </>
+            }
         </div>
     )
 }
 
 Options.propTypes = {
     setProgram: PropTypes.func.isRequired,
-    onExecute: PropTypes.func.isRequired
+    onCompile: PropTypes.func.isRequired
 }
 
 

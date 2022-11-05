@@ -81,8 +81,6 @@ class InterCode:
         inter_code_item = InterCodeItem(dir='Program', code='Program:' + '\n' + self.tabs_counter * "\t" + 'goto Main.main')
         for intercode in intercodes:
             inter_code_item.code += '\n' +  self.tabs_counter * "\t" + intercode.dir + intercode.code
-            
-        self.add_quadruple(op=inter_code_item.dir)
         
         return inter_code_item
     
@@ -99,7 +97,6 @@ class InterCode:
                 inter_code_item.code += '\n' + self.tabs_counter * "\t" + intercode.dir + ':' + intercode.code
             
         inter_code_item.code += '\n' + (self.tabs_counter - 1) * "\t" + f'End {class_item.lex}' + '\n'
-        self.add_quadruple(op=inter_code_item.dir)
         
         return inter_code_item
     
@@ -134,8 +131,7 @@ class InterCode:
                 self.add_quadruple(op='return', arg1=intercodes[0].dir)
             inter_code_item.code += '\n' + (self.tabs_counter - 1) * '\t' + 'End ' + inter_code_item.dir
             
-            self.add_quadruple(op='End ' + inter_code_item.dir)
-            self.add_quadruple(op=inter_code_item.dir)
+            self.add_quadruple(op='end_label',arg1=f'{self.symbol_table.actual_scope_name.lower()}{feature_item.lex.capitalize()}')
             
             
         return inter_code_item

@@ -466,7 +466,7 @@ class SymbolTable(metaclass=MySingleton):
         return self.scopes[-1]
     
     @property
-    def actual_scope_name(self):
+    def actual_scope_name(self) -> str:
         return self.tables[self.actual_scope].name
     
     @property

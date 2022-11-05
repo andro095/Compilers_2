@@ -1,15 +1,12 @@
     # Librerias de Python
-import imp
 import sys
-import os
-from tkinter.tix import Tree
 
 # Librerias de terceros
-from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, Token
-from antlr4.tree.Trees import Trees
+from antlr4 import InputStream, CommonTokenStream, Token
 from fastapi import FastAPI
 from pydantic import BaseModel
-import svgling
+import tkinter as tk
+from tkinter import filedialog
 
 sys.path.append('./MyModules')
 
@@ -36,9 +33,9 @@ def upload_file():
     """    
     pass
 
-@app.post("/execute")
-def execute_code(code: Code) -> dict:
-    """Función para ejecutar el código de YAPL.
+@app.post("/compile")
+def compile_code(code: Code) -> dict:
+    """Función para compilar el código de YAPL.
 
     Argumentos:
         code (Code): Código de YAPL.
@@ -96,6 +93,10 @@ def execute_code(code: Code) -> dict:
     
     if not has_errors and not has_errors2:
         intercode = YaplInterCodeVisitor().visit(tree)
+        
+    
+    quadruples.convert()
+    obj_code = quadruples.obj_code
 
     messages = msgs_db.messages
     
@@ -105,8 +106,7 @@ def execute_code(code: Code) -> dict:
     del msgs_db.error_flag
     quadruples.reset()
         
-    return { 'messages': messages, 'intercode': intercode }
-
+    return { 'messages': messages, 'intercode': intercode, 'obj_code': obj_code }
 
 
 
