@@ -1,4 +1,6 @@
-# Analizador Semántico
+# Laboratorio 3
+
+# Link al video de Youtube: https://youtu.be/NamgLuudtQ0
 
 ## Creadores:
 |      Nombre     | # Carnet |
