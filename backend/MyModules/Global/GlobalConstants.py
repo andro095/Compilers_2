@@ -104,6 +104,8 @@ class StringConstants:
     LET = 'let'
     IN = 'in'
     TYPE_DELIMITER = ':'
+    FALSE = 'false'
+    TRUE = 'true'
     
 class BaseMemory:
     HEAP = 0
@@ -122,6 +124,8 @@ class GlobalConstants:
     op_dict = OperatorConstants().op_dict
     token_types = TokenTypes()
     
+    LOGIC_OPERATORS = [op_dict[token_types.LESS_THAN], op_dict[token_types.LESS_EQUAL], op_dict[token_types.EQUAL]]
+    MEM_SEM_KINDS = [sem_kinds.ATTR, sem_kinds.PARAMETER, sem_kinds.OBJ]
     BASIC_TOKENS = [token_types.INTEGER, token_types.STRING, token_types.TRUE, token_types.FALSE]
     COND_TOKENS = [token_types.IF, token_types.WHILE]
     

@@ -8,6 +8,7 @@ else:
 
 from SymbolTable import SymbolTable, TableOperations
 from ConsoleMessages import MessagesDB
+
 from .YaplConstants import YaplConstants, constants
 from .YaplUtils import is_terminal_node
 
@@ -34,6 +35,7 @@ class YaplVisitor(ParseTreeVisitor):
         self.symbol_table.check_main()
         self.symbol_table.update_mem_position(0)
         print('Tablas de símbolos: %s.' % str(self.symbol_table))
+        
 
     # Visit a parse tree produced by YaplParser#class.
     def visitClass(self, ctx: YaplParser.ClassContext):

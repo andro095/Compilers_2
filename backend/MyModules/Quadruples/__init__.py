@@ -1,1 +1,1 @@
-from .Quadruples import Quadruples, make_quadruple
+from .Quadruples import Quadruples, make_quadruple, Quadruple

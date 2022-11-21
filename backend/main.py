@@ -13,7 +13,7 @@ sys.path.append('./MyModules')
 # Librerias Propias
 from YAPL import YaplLexer, YaplParser, YaplErrorListener, YaplVisitor, YaplSysTypeVisitor, YaplInterCodeVisitor
 from ConsoleMessages import MessagesDB
-from SymbolTable import SymbolTable
+from SymbolTable import SymbolTable, MemoryDescriptor
 from Quadruples import Quadruples
 from Global import global_constants
 
@@ -21,6 +21,7 @@ app = FastAPI()
 msgs_db = MessagesDB()
 quadruples = Quadruples()
 sym_table = SymbolTable()
+mem_descriptor = MemoryDescriptor()
 
 
 class Code(BaseModel):
@@ -105,6 +106,7 @@ def compile_code(code: Code) -> dict:
     del msgs_db.messages
     del msgs_db.error_flag
     quadruples.reset()
+    mem_descriptor.reset()
         
     return { 'messages': messages, 'intercode': intercode, 'obj_code': obj_code }
 

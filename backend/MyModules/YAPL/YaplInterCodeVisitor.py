@@ -6,7 +6,7 @@ if __name__ is not None and "." in __name__:
 else:
     from YaplParser import YaplParser
     
-from SymbolTable import SymbolTable
+from SymbolTable import SymbolTable, MemoryDescriptor
 from ConsoleMessages import MessagesDB
 from .YaplUtils import evaluate_terminal_children
 from InterCode import InterCodeItem, InterCode
@@ -50,6 +50,8 @@ class YaplInterCodeVisitor(ParseTreeVisitor):
         
         inter_code_item = self.intercode.evaluate_program(ctx, intercodes)
         
+        # print(MemoryDescriptor())
+        
         
         self.intercode.print_quadruple()
         return inter_code_item.code  
@@ -58,6 +60,8 @@ class YaplInterCodeVisitor(ParseTreeVisitor):
         res = evaluate_terminal_children(ctx.children)
                 
         self.symbol_table.enter_scope(ctx.children[1].getText())
+        
+        self.intercode.add_quadruple(op='class_sepator', arg1=ctx.children[1].getText())
         
         self.intercode.increase_tabs()
         
@@ -82,9 +86,10 @@ class YaplInterCodeVisitor(ParseTreeVisitor):
         
         
         if feature.sem_kind == global_constants.sem_kinds.METHOD:
+            self.intercode.add_quadruple(op='label', arg1=f'{self.symbol_table.actual_scope_name.lower()}{feature.lex.capitalize()}')
+            
             self.symbol_table.enter_scope(ctx.children[0].getText())
             
-            self.intercode.add_quadruple(op='label', arg1=f'{self.symbol_table.actual_scope_name.lower()}{feature.lex.capitalize()}')
             
             
             self.intercode.increase_tabs()
@@ -116,8 +121,7 @@ class YaplInterCodeVisitor(ParseTreeVisitor):
         
         if all(res) and len(ctx.children) < 3:
             return self.get_base_type(ctx)
-        else:
-            
+        else:            
             if res[0] and ctx.children[0].symbol.type == global_constants.token_types.LET:
                 self.symbol_table.enter_scope(f'let{self.analized_lets}')
             

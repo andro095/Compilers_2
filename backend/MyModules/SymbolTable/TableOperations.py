@@ -173,7 +173,7 @@ class TableOperations:
             token=ctx.children[i - 1].symbol.type,
             typ=children[i + 1],
             line=line,
-            sem_kind=global_constants.sem_kinds.ATTR,
+            sem_kind=global_constants.sem_kinds.PARAMETER,
             param_method=constants.param_methods.REF,
             mem_base=global_constants.base_memory.STACK,
             byte_size=self.symbol_table.get_byte_size(children[i + 1])
@@ -196,7 +196,7 @@ class TableOperations:
                 line=line,
                 sem_kind=global_constants.sem_kinds.OBJ,
                 param_method=constants.param_methods.REF,
-                mem_base=global_constants.base_memory.HEAP,
+                mem_base=self.symbol_table.get_mem_base(ctx),
                 byte_size=self.symbol_table.get_byte_size(children[1])
             )
             

@@ -5,6 +5,8 @@ from ConsoleMessages import MessagesDB
 from pydantic import BaseModel
 from Singleton import MySingleton
 from Global import global_constants
+from .MemoryDescriptor import MemoryDescriptor, MemoryDescriptorItem
+from YAPL import YaplParser
 
 class TableItem(BaseModel):
     lex: str
@@ -38,10 +40,10 @@ class SymbolTable(metaclass=MySingleton):
         self.mem_counter = 0
         self.heap_counter = 0
         self.class_memories = {}
+        self.memory_descriptor = MemoryDescriptor()
         
         self.add_basic_types()
         
-    
     def check_main(self) -> None:
         if self.check_main_existence():
             main_indx = indx(list(map(lambda x: x.lex, self.tables[0].items)), constants.string_literals.MAIN)
@@ -60,9 +62,7 @@ class SymbolTable(metaclass=MySingleton):
             main_m: TableItem = self.tables[main_table_indx].items[main_m_indx]
             
             if main_m.param_num > 0:
-                self.msgs_db.insert_error(line, "El método main no debe tener parámetros")
-            
-            
+                self.msgs_db.insert_error(line, "El método main no debe tener parámetros")         
     
     def check_main_existence(self) -> bool:
         return any(map(lambda x: x.lex == constants.string_literals.MAIN and x.inherits is None, self.tables[0].items))
@@ -189,7 +189,8 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.PARAMETER,
             param_method=constants.param_methods.VALUE,
-            byte_size=global_constants.byte_size.STRING
+            byte_size=global_constants.byte_size.STRING,
+            mem_base=global_constants.base_memory.STACK
         )
         
         self.insert(concat_p_i)
@@ -218,7 +219,8 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.PARAMETER,
             param_method=constants.param_methods.VALUE,
-            byte_size=global_constants.byte_size.INT
+            byte_size=global_constants.byte_size.INT,
+            mem_base=global_constants.base_memory.STACK
         )
         
         self.insert(substr_p_i_1)
@@ -230,7 +232,8 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.PARAMETER,
             param_method=constants.param_methods.VALUE,
-            byte_size=global_constants.byte_size.INT
+            byte_size=global_constants.byte_size.INT,
+            mem_base=global_constants.base_memory.STACK
         )
         
         self.insert(substr_p_i_2)
@@ -276,7 +279,8 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.PARAMETER,
             param_method=constants.param_methods.VALUE,
-            byte_size=global_constants.byte_size.STRING
+            byte_size=global_constants.byte_size.STRING,
+            mem_base=global_constants.base_memory.STACK
         )
         
         self.insert(out_string_p_i)
@@ -306,7 +310,8 @@ class SymbolTable(metaclass=MySingleton):
             line=(0, 0),
             sem_kind=global_constants.sem_kinds.PARAMETER,
             param_method=constants.param_methods.VALUE,
-            byte_size=global_constants.byte_size.INT
+            byte_size=global_constants.byte_size.INT,
+            mem_base=global_constants.base_memory.STACK
         )
         
         self.insert(out_int_p_i)
@@ -379,6 +384,14 @@ class SymbolTable(metaclass=MySingleton):
         for scope in reversed(self.scopes):
             for row in self.tables[scope].items:
                 if row.lex == name:
+                    return row
+                
+        return None
+    
+    def get_by_mem_pos(self, mem_pos: int) -> TableItem:
+        for scope in reversed(self.scopes):
+            for row in self.tables[scope].items:
+                if row.mem_pos == mem_pos:
                     return row
                 
         return None
@@ -457,9 +470,45 @@ class SymbolTable(metaclass=MySingleton):
             if ind != -1:
                 self.update_mem_position(ind, actual_class)
                 
-            if elem.sem_kind == global_constants.sem_kinds.ATTR or elem.sem_kind == global_constants.sem_kinds.PARAMETER or elem.sem_kind == global_constants.sem_kinds.OBJ:
+            if elem.sem_kind in global_constants.MEM_SEM_KINDS:
                 #print('Updating mem pos for', elem.lex, 'in', actual_class)
-                elem.mem_pos = self.allocate_mem_pos(elem.byte_size, elem.mem_base, actual_class)
+                mem_pos = self.allocate_mem_pos(elem.byte_size, elem.mem_base, actual_class)
+                elem.mem_pos = mem_pos
+                mem_item = MemoryDescriptorItem(
+                    address=mem_pos,
+                    name=elem.lex,
+                    typ=elem.typ,
+                    scope=self.tables[index].name,
+                    size=elem.byte_size,
+                    mem_base=elem.mem_base,
+                )
+                self.memory_descriptor.add_item(mem_item)
+    
+    def get_mem_base(self, ctx):
+        if len(self.scopes) == 2:
+            return global_constants.base_memory.HEAP
+        
+        parent = ctx.parentCtx
+        parent_child = parent.getChild(0)
+        
+        print('Parent: ', parent.getText())
+        print('Parent child', parent_child.getText())
+        
+        if type(parent_child) == YaplParser.ExprContext:
+            return global_constants.base_memory.STACK
+        
+        while parent_child.symbol.type == global_constants.token_types.LROUND:
+            parent = parent.parentCtx
+            parent_child = parent.getChild(0)
+            
+        parent_child_2 = parent.getChild(1)
+        
+            
+        if parent_child.symbol.type == global_constants.token_types.ID and parent_child_2.symbol.type == global_constants.token_types.ASIGN:
+            elem = self.get(parent_child.getText())
+            return elem.mem_base
+        else:
+            return global_constants.base_memory.STACK
     
     @property
     def actual_scope(self):

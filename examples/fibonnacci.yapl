@@ -1,33 +1,21 @@
 class Main {
     io_enter: IO;
     num: Int;
+    count: Int <- 0;
+    lat: Int <- 0;
+    ant: Int <- 1;
+    output: Int;
     
     fibonnacci(n: Int) : Int {
-       if n = 0
-       then {
-            io_enter.out_int(0);
-            0;
-       }            
-       else
-            if n = 1
-            then {
-                    io_enter.out_int(1);
-                    1;
-               }
-            else
-                if n = 2
-                then {
-                    io_enter.out_int(1);
-                    1;
-                }
-                else {
-                    io_enter.out_int(fibonnacci(n - 1) + fibonnacci(n-2));
-                    fibonnacci(n - 1) + fibonnacci(n-2);
-                }
-                fi
-            fi
-       fi
-    
+       {
+        while count < n loop {
+            output <- lat + ant;
+            lat <- ant;
+            ant <- output;
+            count <- count + 1;
+        } pool;
+        output;
+       }
     } ;
 
 
